@@ -1,8 +1,8 @@
 clojure.osgi
 ============
 
-Attempt to integrate <a href="http://www.clojure.org">Clojure</a> with 
-<a href="http://www.osgi.org">OSGi</a>
+Attempt to integrate [Clojure](http://www.clojure.org) with 
+[OSGi](http://www.osgi.org)
 
 License
 -------
