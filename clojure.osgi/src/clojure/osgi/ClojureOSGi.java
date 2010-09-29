@@ -35,7 +35,6 @@ public class ClojureOSGi {
 		try {
 
 			withBundle(aContext.getBundle(), new RunnableWithException() {
-				@Override
 				public void run() throws Exception {
 					OSGI_REQUIRE.invoke(Symbol.intern(aName));
 				}
@@ -50,7 +49,6 @@ public class ClojureOSGi {
 
 		try {
 			withBundle(aContext.getBundle(), new RunnableWithException() {
-				@Override
 				public void run() throws Exception {
 					OSGI_REQUIRE.invoke(Symbol.intern(aNamespace));
 
@@ -85,7 +83,6 @@ public class ClojureOSGi {
 						.extractBundleId(url));
 
 				withBundle(bundle, new RunnableWithException() {
-					@Override
 					public void run() throws Exception {
 						RT.load(aName);
 					}

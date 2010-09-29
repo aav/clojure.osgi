@@ -4,7 +4,6 @@ import java.net.URL;
 
 public class EquinoxBundleIdExtrator implements BundleIdExtractor {
 
-	@Override
 	public long extractBundleId(URL aURL) {
 		String host = aURL.getHost();
 		
