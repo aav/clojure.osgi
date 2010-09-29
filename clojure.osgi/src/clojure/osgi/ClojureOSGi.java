@@ -12,7 +12,7 @@ import clojure.lang.Symbol;
 import clojure.lang.Var;
 import clojure.osgi.internal.BundleIdExtractor;
 import clojure.osgi.internal.ClojureOSGiActivator;
-import clojure.osgi.internal.EquinoxBundleIdExtrator;
+import clojure.osgi.internal.EquinoxBundleIdExtractor;
 
 public class ClojureOSGi {
 	final static private Var REQUIRE = RT.var("clojure.core", "require");
@@ -73,7 +73,7 @@ public class ClojureOSGi {
 
 			URL url = aBundle.getResource(aName + ".clj");
 			if (url != null) {
-				BundleIdExtractor extractor = new EquinoxBundleIdExtrator();
+				BundleIdExtractor extractor = new EquinoxBundleIdExtractor();
 
 				BundleContext context = ClojureOSGiActivator.getContext();
 
