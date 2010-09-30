@@ -36,3 +36,4 @@ Export-Package: clojure,
  clojure.contrib.jmx,
  clojure.contrib.pprint
 Bundle-Activator: clojure.osgi.internal.ClojureOSGiActivator
+Bundle-ActivationPolicy: lazy
