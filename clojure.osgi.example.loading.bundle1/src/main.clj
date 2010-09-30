@@ -12,6 +12,6 @@
 
 (try
   (use 'clojure.osgi.example.loading.bundle2.internal.private)
-  (println "main.clj(bundle1): trying to use a namespace from internal package of bundle2 should have failed")  
+  (throw (RuntimeException."main.clj(bundle1): trying to use a namespace from internal package of bundle2 should have failed"))  
   (catch Exception e
     (println "main.clj(bundle1): trying to use a namespace from internal package of bundle2 failed as expected")))
