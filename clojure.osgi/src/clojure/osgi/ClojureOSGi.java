@@ -127,7 +127,7 @@ public class ClojureOSGi {
 		void run() throws Exception;
 	}
 
-	private static class BundleClassLoader extends ClassLoader {
+	public  static class BundleClassLoader extends ClassLoader {
 		private Bundle _bundle;
 
 		public BundleClassLoader(Bundle bundle) {

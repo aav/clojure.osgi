@@ -1,7 +1,5 @@
 package clojure.osgi.example.loading.aot;
 
-import java.lang.reflect.Method;
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -13,16 +11,19 @@ public class BundleAOTActivator implements BundleActivator {
 		try {
 			ClojureOSGi.withBundle(bundleContext.getBundle(), new RunnableWithException() {
 				public void run() throws Exception {
-					Class cls = bundleContext.getBundle().loadClass("clojure.osgi.example.loading.aot.CljClass");
-					cls.newInstance();
+					Class.forName(
+					        "clojure.osgi.example.loading.aot.CljClass", 
+					        true, 
+					        new ClojureOSGi.BundleClassLoader(
+					                bundleContext.getBundle()));
 				}
 			});
 			
-			System.out.println(new CljClass().toString());
+			System.out.println("\n" + new CljClass().toString());
 			
-			System.out.println("BundleAOTActivator.class: expected the load of CljClass to fail");
+			System.out.println("BundleAOTActivator.class: instanciation of class CljClass worked as expected");
 		} catch (Exception e) {
-			System.out.println("BundleAOTActivator.class: instanciation failed as expected");
+			System.out.println("BundleAOTActivator.class: unexpected fail of instanciation for class CljClass");
 			throw e;
 		}
 	}
@@ -30,5 +31,5 @@ public class BundleAOTActivator implements BundleActivator {
 	public void stop(BundleContext bundleContext) throws Exception {
 	}
 	
-	public static String hello() { return "hello from bundleATO"; }
+	public static String hello() { return "hello from bundleAOT"; }
 }
