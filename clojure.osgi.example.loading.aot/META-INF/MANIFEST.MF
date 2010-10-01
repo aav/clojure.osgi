@@ -11,3 +11,4 @@ Import-Package: clojure.lang,
  org.osgi.framework;version="1.3.0"
 Bundle-ClassPath: .,
  classes/
+Require-Bundle: clojure.osgi;bundle-version="1.0.0"

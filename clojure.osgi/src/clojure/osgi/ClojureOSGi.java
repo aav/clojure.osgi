@@ -94,7 +94,7 @@ public class ClojureOSGi {
 		}
 	}
 
-	private static void withBundle(Bundle aBundle, RunnableWithException aCode)
+	public static void withBundle(Bundle aBundle, RunnableWithException aCode)
 			throws Exception {
 		ClassLoader loader = new BundleClassLoader(aBundle);
 		IPersistentMap bindings = RT.map(BUNDLE, aBundle, Compiler.LOADER,
@@ -123,7 +123,7 @@ public class ClojureOSGi {
 		}
 	}
 
-	private interface RunnableWithException {
+	public interface RunnableWithException {
 		void run() throws Exception;
 	}
 
