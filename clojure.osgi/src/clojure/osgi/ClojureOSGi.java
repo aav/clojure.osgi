@@ -15,15 +15,41 @@ import clojure.osgi.internal.ClojureOSGiActivator;
 import clojure.osgi.internal.EquinoxBundleIdExtractor;
 
 public class ClojureOSGi {
-	final static private Var REQUIRE = RT.var("clojure.core", "require");
-	final static private Var OSGI_REQUIRE = RT.var("clojure.osgi.core",
-			"osgi-require");
-	final static private Var BUNDLE = RT.var("clojure.osgi.core", "*bundle*");
+	final static private Var REQUIRE;
+	final static private Var OSGI_REQUIRE;
+	final static private Var BUNDLE;
 
 	static {
 		try {
-			REQUIRE.invoke(Symbol.intern("clojure.main"));
-			REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
+			BundleClassLoader loader = new BundleClassLoader(ClojureOSGiActivator.getContext().getBundle());
+			IPersistentMap bindings = RT.map(Compiler.LOADER, loader);
+
+			boolean pushed = true;
+
+			ClassLoader saved = Thread.currentThread().getContextClassLoader();
+
+			try {
+				Thread.currentThread().setContextClassLoader(loader);
+
+				try {
+					Var.pushThreadBindings(bindings);
+				} catch (Exception aEx) {
+					pushed = false;
+					throw aEx;
+				}
+
+				REQUIRE = RT.var("clojure.core", "require");
+				OSGI_REQUIRE = RT.var("clojure.osgi.core",
+						"osgi-require");
+				BUNDLE = RT.var("clojure.osgi.core", "*bundle*");
+				REQUIRE.invoke(Symbol.intern("clojure.main"));
+				REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
+			} finally {
+				if (pushed)
+					Var.popThreadBindings();
+
+				Thread.currentThread().setContextClassLoader(saved);
+			}
 		} catch (Exception aEx) {
 			throw new RuntimeException(aEx);
 		}
@@ -120,28 +146,6 @@ public class ClojureOSGi {
 				Var.popThreadBindings();
 
 			Thread.currentThread().setContextClassLoader(saved);
-		}
-	}
-
-	public interface RunnableWithException {
-		void run() throws Exception;
-	}
-
-	public  static class BundleClassLoader extends ClassLoader {
-		private Bundle _bundle;
-
-		public BundleClassLoader(Bundle bundle) {
-			_bundle = bundle;
-		}
-
-		@Override
-		protected Class<?> findClass(String name) throws ClassNotFoundException {
-			return _bundle.loadClass(name);
-		}
-
-		@Override
-		public URL getResource(String name) {
-			return _bundle.getResource(name);
 		}
 	}
 }
