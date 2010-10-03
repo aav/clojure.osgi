@@ -17,9 +17,9 @@ public class BundleAOTActivator implements BundleActivator {
 					        true, 
 					        new BundleClassLoader(
 					                bundleContext.getBundle()));
-					System.out.println("\n" + new CljClass().toString());
 				}
 			});
+			System.out.println("\n" + new CljClass().toString());
 			System.out.println("BundleAOTActivator.class: instanciation of class CljClass worked as expected");
 		} catch (Exception e) {
 			System.out.println("BundleAOTActivator.class: unexpected fail of instanciation for class CljClass");
