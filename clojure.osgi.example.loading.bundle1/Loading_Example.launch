@@ -20,5 +20,5 @@
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
-<stringAttribute key="workspace_bundles" value="org.clojure.contrib@default:default,clojure.osgi@default:default,org.clojure@default:default"/>
+<stringAttribute key="workspace_bundles" value="org.clojure.contrib@default:default,clojure.osgi@default:default,clojure.osgi.example.loading.bundle2,org.clojure@default:default,clojure.osgi.example.loading.bundle1"/>
 </launchConfiguration>
