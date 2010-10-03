@@ -69,6 +69,17 @@ public class ClojureOSGi {
 			throw aEx;
 		}
 	}
+	
+	public static void loadAOTClass(final BundleContext aContext,
+			final String fullyQualifiedAOTClassName) throws Exception {
+		
+		withBundle(aContext.getBundle(), new RunnableWithException() {
+			public void run() throws Exception {
+				Class.forName(fullyQualifiedAOTClassName, true,
+						new BundleClassLoader(aContext.getBundle()));
+			}
+		});
+	}
 
 	public static void requireAndStart(final BundleContext aContext,
 			final String aNamespace) throws Exception {
