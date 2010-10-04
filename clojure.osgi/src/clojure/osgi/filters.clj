@@ -6,10 +6,10 @@
   (str "(" filter ")"))
 
 (defn osgi-filter-and [& filter-list]
-  (osgi-filter* (str "&" (apply str (interpose " " filter-list)))))
+  (osgi-filter* (str "&" (apply str filter-list))))
 
 (defn osgi-filter-or [& filter-list]
-  (osgi-filter* (str "|" (apply str (interpose " " filter-list)))))
+  (osgi-filter* (str "|" (apply str filter-list))))
 
 (defn osgi-filter-not [filter]
   (str "!" filter))
@@ -20,7 +20,7 @@
 (defmacro osgi-filter [& body]
   	`(macrolet 
   		[
-   			(~'=  [k# v#]  `(osgi-filter-equal ~k# ~v#))
+   			(~'=   [k# v#] `(osgi-filter-equal ~k# ~v#))
         (~'not [f#]    `(osgi-filter-not ~f#))
         (~'or  [& fs#] `(osgi-filter-or ~@fs#)) 
         (~'and [& fs#] `(osgi-filter-and ~@fs#)) 
