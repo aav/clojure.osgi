@@ -2,11 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Closgi
 Bundle-SymbolicName: clojure.osgi
-Bundle-Version: 1.0.0
+Bundle-Version: 1.2.0
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: .
 Bundle-Activator: clojure.osgi.internal.ClojureOSGiActivator
-Require-Bundle: org.clojure;bundle-version="1.2.0";visibility:=reexport,
- org.clojure.contrib;bundle-version="1.2.0";visibility:=reexport,
- org.eclipse.osgi;bundle-version="3.6.1";visibility:=reexport
 Export-Package: clojure.osgi
+Import-Package: clojure,
+ clojure.contrib,
+ clojure.lang,
+ org.osgi.framework;version="1.5.0"
+Bundle-ActivationPolicy: lazy
