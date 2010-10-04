@@ -8,3 +8,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Require-Bundle: clojure.osgi;bundle-version="1.0.0",
  clojure.osgi.example.loading.bundle2;bundle-version="1.0.0"
+Import-Package: org.osgi.framework;version="1.5.0"
