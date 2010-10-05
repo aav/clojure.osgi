@@ -12,7 +12,7 @@ import clojure.lang.Symbol;
 import clojure.lang.Var;
 import clojure.osgi.internal.BundleIdExtractor;
 import clojure.osgi.internal.ClojureOSGiActivator;
-import clojure.osgi.internal.EquinoxBundleIdExtrator;
+import clojure.osgi.internal.EquinoxBundleIdExtractor;
 
 public class ClojureOSGi {
 	final static private Var REQUIRE = RT.var("clojure.core", "require");
@@ -35,7 +35,6 @@ public class ClojureOSGi {
 		try {
 
 			withBundle(aContext.getBundle(), new RunnableWithException() {
-				@Override
 				public void run() throws Exception {
 					OSGI_REQUIRE.invoke(Symbol.intern(aName));
 				}
@@ -50,7 +49,6 @@ public class ClojureOSGi {
 
 		try {
 			withBundle(aContext.getBundle(), new RunnableWithException() {
-				@Override
 				public void run() throws Exception {
 					OSGI_REQUIRE.invoke(Symbol.intern(aNamespace));
 
@@ -75,7 +73,7 @@ public class ClojureOSGi {
 
 			URL url = aBundle.getResource(aName + ".clj");
 			if (url != null) {
-				BundleIdExtractor extractor = new EquinoxBundleIdExtrator();
+				BundleIdExtractor extractor = new EquinoxBundleIdExtractor();
 
 				BundleContext context = ClojureOSGiActivator.getContext();
 
@@ -85,7 +83,6 @@ public class ClojureOSGi {
 						.extractBundleId(url));
 
 				withBundle(bundle, new RunnableWithException() {
-					@Override
 					public void run() throws Exception {
 						RT.load(aName);
 					}
@@ -97,7 +94,7 @@ public class ClojureOSGi {
 		}
 	}
 
-	private static void withBundle(Bundle aBundle, RunnableWithException aCode)
+	public static void withBundle(Bundle aBundle, RunnableWithException aCode)
 			throws Exception {
 		ClassLoader loader = new BundleClassLoader(aBundle);
 		IPersistentMap bindings = RT.map(BUNDLE, aBundle, Compiler.LOADER,
@@ -126,11 +123,11 @@ public class ClojureOSGi {
 		}
 	}
 
-	private interface RunnableWithException {
+	public interface RunnableWithException {
 		void run() throws Exception;
 	}
 
-	private static class BundleClassLoader extends ClassLoader {
+	public  static class BundleClassLoader extends ClassLoader {
 		private Bundle _bundle;
 
 		public BundleClassLoader(Bundle bundle) {

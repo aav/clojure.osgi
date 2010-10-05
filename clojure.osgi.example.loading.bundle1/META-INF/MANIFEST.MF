@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Bundle1
+Bundle-SymbolicName: clojure.osgi.example.loading.bundle1
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: clojure.osgi.example.loading.bundle1.Bundle1Activator
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Import-Package: clojure.lang,
+ clojure.osgi,
+ clojure.osgi.example.loading.bundle2,
+ org.osgi.framework;version="1.3.0"

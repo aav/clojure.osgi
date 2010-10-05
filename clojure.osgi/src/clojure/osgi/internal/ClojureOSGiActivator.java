@@ -11,12 +11,10 @@ public class ClojureOSGiActivator implements BundleActivator {
 		return s_Context;
 	}
 
-	@Override
 	public void start(BundleContext context) throws Exception {
 		s_Context = context;
 	}
 
-	@Override
 	public void stop(BundleContext context) throws Exception {
 		s_Context = null;
 	}
