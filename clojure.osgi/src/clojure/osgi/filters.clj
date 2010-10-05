@@ -1,5 +1,8 @@
 (ns clojure.osgi.filters
-	(:use (clojure.contrib macro-utils))  
+	(:use (clojure.contrib macro-utils))
+  (:import
+		(org.osgi.framework Filter FrameworkUtil)
+  )
 )
 
 (defn- osgi-filter* [filter]
@@ -29,5 +32,19 @@
      	~@body
    )
 )
+
+; service filter
+(defprotocol FilterProtocol
+	(get-filter [this])
+)
+
+(extend-protocol FilterProtocol
+	Filter
+		(get-filter [f] f)	
+
+	String
+		(get-filter [s] (FrameworkUtil/createFilter s))
+)
+
 
 
