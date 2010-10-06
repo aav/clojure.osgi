@@ -102,6 +102,28 @@ public class ClojureOSGi {
 			throw aEx;
 		}
 	}
+	
+	public static void stop(final BundleContext aContext,
+			final String aNamespace) throws Exception
+	{
+		try {
+			withBundle(aContext.getBundle(), new RunnableWithException() {
+				public void run() throws Exception {
+					OSGI_REQUIRE.invoke(Symbol.intern(aNamespace));
+
+					String name = "bundle-stop";
+					final Var var = RT.var(aNamespace, name);
+					if (var.isBound())
+						var.invoke(aContext);
+					else
+						throw new Exception(String.format(
+								"'%s' is not bound in '%s'", name, aNamespace));
+				}
+			});
+		} catch (Exception aEx) {
+			throw aEx;
+		}
+	}
 
 	public static void load(final String aName, Bundle aBundle)
 			throws Exception {
