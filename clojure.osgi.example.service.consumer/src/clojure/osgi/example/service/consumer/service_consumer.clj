@@ -3,16 +3,28 @@
     (clojure.osgi core services filters)
     (clojure.osgi.example.service.producer service-producer)
   )
+  (:import 
+		(org.osgi.util.tracker ServiceTrackerCustomizer)
+	)
 )
-
-
 
 
 (defn- bundle-start [context]
   (track-service MyService
-    (fn [verb reference service]
-      (if (= verb :adding)
-        (say-hello service)
+    (reify ServiceTrackerCustomizer
+      (addingService [_ reference]
+        (let [service (.getService context reference)]
+          (say-hello service)
+          service            
+        )
+      )
+
+      (removedService [_ reference service]
+        (println "Service removed")
+        (.ungetService context reference)
+      )
+
+      (modifiedService [_ reference service]
       )
     )
   )

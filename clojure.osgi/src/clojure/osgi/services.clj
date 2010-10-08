@@ -39,49 +39,9 @@
 	(modified [clallback reference service])
 )
 
-(extend-protocol TrackerDestination
-	clojure.lang.IFn
-		(adding [callback reference service]  	
-			(callback :adding  reference service))
-
-		(removed [callback reference service] 	
-			(callback :removed  reference service))
-
-		(modified [callback reference service] 
-			(callback :modified reference service))
-
-
-	clojure.lang.Atom
-		(adding [a reference service]
-			(compare-and-set! a nil service)
-			(alter-meta! a assoc :service-reference reference)
-		)
-
-		(removed [a reference service]
-			(compare-and-set! a service nil)
-			(alter-meta! a dissoc :service-reference)
-		)
- 
-		(modified [a reference service]
-			(alter-meta! a assoc :service-reference reference)
-		)
-)
-
-(defn track-service [filter callback]
+(defn track-service [filter customizer]
   (let 
     [context (.getBundleContext *bundle*)
-     customizer
-      (reify ServiceTrackerCustomizer
-	      (addingService [_ reference]
-	        (adding callback reference (.getService context reference)))
-
-	      (removedService [_ reference service]
-	        (removed callback reference service))
-
-	      (modifiedService [_ reference service]
-	        (modified callback reference service))
-      )
-     
      tracker (ServiceTracker. context (get-filter filter) customizer)]
     
    	 (.open tracker)
