@@ -30,7 +30,14 @@
     (get-filter 
       (osgi-filter
         (= "objectClass" (protocol-interface-name p))))
-  )	
+  )
+
+  java.lang.Class
+  (get-filter [c]
+    (get-filter
+      (osgi-filter
+        (= "objectClass" (.getName c))))
+  )
 )
 
 (defprotocol TrackerDestination
