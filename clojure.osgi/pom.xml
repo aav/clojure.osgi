@@ -1,169 +1,114 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
 	 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.github.aav</groupId>
-  <artifactId>clojure.osgi</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>Clojure OSGI</name>
-    
-  <properties>
-    <clojure-version>1.2.0</clojure-version>
-  </properties>
-    
-  <dependencies>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi_R4_core</artifactId>
-      <version>1.0</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.clojure</groupId>
-      <artifactId>clojure</artifactId>
-      <version>${clojure-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.clojure</groupId>
-      <artifactId>clojure-contrib</artifactId>
-      <version>${clojure-version}</version>
-    </dependency>
-  </dependencies>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.aav</groupId>
+	<artifactId>clojure.osgi</artifactId>
+	<packaging>jar</packaging>
+	<version>1.2.10</version>
+	<name>ClojureOSGI</name>
 
-  <build>
-      <sourceDirectory>src</sourceDirectory>
-      
-      <resources>
-        <resource>
-         <directory>META-INF</directory>
-         <targetPath>META-INF</targetPath>
-        </resource>
-      </resources>
-      
-      
-      <plugins>
-      
-	<plugin>
-	  <groupId>org.apache.maven.plugins</groupId>
-	  <artifactId>maven-jar-plugin</artifactId>
-	  <configuration>
-	    <archive>
-	      <manifestFile>META-INF/MANIFEST.MF</manifestFile>
-	    </archive>
-	  </configuration>
-        </plugin>
-      
-      
-	<!-- plugin> 
-	  <groupId>org.apache.felix</groupId>
-	  <artifactId>maven-bundle-plugin</artifactId>
-	  <extensions>true</extensions>
-	  <configuration>
-	    <manifestLocation>META-INF</manifestLocation>
-	    <instructions>
-	      <include>META-INF/MANIFEST.MF</include>
-	      <Bundle-RequiredExecutionEnvironment>J2SE-1.5</Bundle-RequiredExecutionEnvironment>
-	      <Import-Package>
-		javax.xml.parsers,
-		org.osgi.framework;version="1.3.0",
-		org.osgi.util.tracker;version="1.4.0",
-		org.xml.sax,
-		org.xml.sax.helpers
-	      </Import-Package>
-	      <Export-Package>
-		  clojure,
-		  clojure.asm,
-		  clojure.asm.commons,
-		  clojure.core,
-		  clojure.core.protocols,
-		  clojure.core.proxy$clojure.lang,
-		  clojure.inspector.proxy$java.lang,
-		  clojure.inspector.proxy$javax.swing.table,
-		  clojure.java,
-		  clojure.java.browse_ui.proxy$java.lang,
-		  clojure.java.io,
-		  clojure.lang,
-		  clojure.osgi,
-		  clojure.pprint,
-		  clojure.pprint.proxy$java.io,
-		  clojure.repl.proxy$java.io,
-		  clojure.test,
-		  clojure.xml.proxy$java.lang,
-		  clojure.contrib,
-		  clojure.contrib.condition,
-		  clojure.contrib.fnmap,
-		  clojure.contrib.jmx,
-		  clojure.contrib.pprint
-	      </Export-Package>
-	      <Bundle-Activator>clojure.osgi.internal.ClojureOSGiActivator</Bundle-Activator>
-	      <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
-	    </instructions>
-	  </configuration>
-	</plugin -->
-      
-	<plugin>
-	  <groupId>org.apache.maven.plugins</groupId>
-	  <artifactId>maven-compiler-plugin</artifactId>
-	  <configuration>
-	    <source>1.5</source>
-	    <target>1.5</target>
-	    <meminitial>128m</meminitial>
-	    <maxmem>512m</maxmem>
-	  </configuration>
-	</plugin>
-                       
-	<plugin>
-	  <groupId>org.apache.maven.plugins</groupId>
-	  <artifactId>maven-source-plugin</artifactId>
-	  <executions>
-	    <execution>
-	      <id>attach-sources</id>
-	      <phase>package</phase>
-	      <goals>
-		<goal>jar</goal>
-	      </goals>
-	    </execution>
-	  </executions>
-	</plugin>
-	
-	<plugin>
-	  <groupId>com.theoryinpractise</groupId>
-	  <artifactId>clojure-maven-plugin</artifactId>
-	  <configuration>
-	    <sourceDirectories>
-	      <sourceDirectory>src</sourceDirectory>
-	    </sourceDirectories>
-	    <copyAllCompiledNamespaces>true</copyAllCompiledNamespaces>
-	  </configuration>
-	  <!-- executions>
-	    <execution>
-	      <id>compile-clojure</id>
-	      <phase>compile</phase>
-	      <goals>
-		<goal>compile</goal>
-	      </goals>
-	    </execution>
-	  </executions -->
-	</plugin>
+	<properties>
+		<clojure-version>1.2.0</clojure-version>
+	</properties>
 
-    </plugins>
-  </build>
-     
-  <repositories>
-    <repository>
-      <id>clojars</id>
-      <url>http://clojars.org/repo/</url>
-    </repository>
-    <repository>
-      <id>clojure</id>
-      <url>http://build.clojure.org/releases</url>
-    </repository>
-    <repository>
-      <id>central</id>
-      <url>http://repo1.maven.org/maven2</url>
-    </repository>
-  </repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>4.2.0</version>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
 
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.compendium</artifactId>
+			<version>4.2.0</version>
+			<scope>provided</scope>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.clojure</groupId>
+			<artifactId>clojure</artifactId>
+			<version>${clojure-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.clojure</groupId>
+			<artifactId>clojure-contrib</artifactId>
+			<version>${clojure-version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+
+		<resources>
+			<resource>
+				<directory>META-INF</directory>
+				<targetPath>META-INF</targetPath>
+			</resource>
+
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>**/*.clj</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+					<meminitial>128m</meminitial>
+					<maxmem>512m</maxmem>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>clojars</id>
+			<url>http://clojars.org/repo/</url>
+		</repository>
+		<repository>
+			<id>clojure</id>
+			<url>http://build.clojure.org/releases</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>http://repo1.maven.org/maven2</url>
+		</repository>
+	</repositories>
 </project>
