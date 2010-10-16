@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
 	 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.aav</groupId>
+	<groupId>clojure.osgi</groupId>
 	<artifactId>clojure.osgi</artifactId>
 	<packaging>jar</packaging>
 	<version>1.2.10</version>
@@ -43,8 +43,7 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src</sourceDirectory>
-
+		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
 			<resource>
 				<directory>META-INF</directory>
@@ -52,10 +51,7 @@
 			</resource>
 
 			<resource>
-				<directory>src</directory>
-				<includes>
-					<include>**/*.clj</include>
-				</includes>
+				<directory>src/main/clojure</directory>
 			</resource>
 		</resources>
 
