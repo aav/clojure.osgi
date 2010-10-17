@@ -22,6 +22,10 @@ public class ExtenderTracker extends BundleTracker {
 	private ServiceTracker logTracker;
 	private LogService log;
 
+	private enum CallbackType {
+		START, STOP
+	};
+
 	public ExtenderTracker(BundleContext context) {
 		super(context, Bundle.RESOLVED | Bundle.ACTIVE | Bundle.STARTING | Bundle.STOPPING, null);
 
@@ -49,11 +53,11 @@ public class ExtenderTracker extends BundleTracker {
 		}
 
 		if ((bundle.getState() == Bundle.STARTING || bundle.getState() == Bundle.ACTIVE) && !active.contains(bundle)) {
-			invokeActivatorCallback("bundle-start", bundle);
+			invokeActivatorCallback(CallbackType.START, bundle);
 
 			active.add(bundle);
 		} else if ((bundle.getState() == Bundle.RESOLVED || bundle.getState() == Bundle.STOPPING) && active.contains(bundle)) {
-			invokeActivatorCallback("bundle-stop", bundle);
+			invokeActivatorCallback(CallbackType.STOP, bundle);
 			active.remove(bundle);
 		}
 
@@ -76,10 +80,24 @@ public class ExtenderTracker extends BundleTracker {
 		}
 	}
 
-	private void invokeActivatorCallback(final String callbackFunction, final Bundle bundle) {
+	private String callbackFunctionName(CallbackType callback, String header) {
+		//TODO support callback function name customization. i.e.: Clojure-ActivatorNamespace: a.b.c.d;start-function="myStart";stop-function="myStop"
+		switch (callback) {
+		case START:
+			return "bundle-start";
 
+		case STOP:
+			return "bundle-stop";
+			
+		default:
+			throw new IllegalStateException();
+		}
+	}
+	
+	private void invokeActivatorCallback(CallbackType callback, final Bundle bundle) {
 		final String ns = (String) bundle.getHeaders().get("Clojure-ActivatorNamespace");
 		if (ns != null) {
+			final String callbackFunction = callbackFunctionName(callback, ns);
 			final Var var = RT.var(ns, callbackFunction);
 			if (var.isBound()) {
 				try {
