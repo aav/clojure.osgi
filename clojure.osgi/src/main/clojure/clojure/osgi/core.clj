@@ -33,7 +33,7 @@
 	  (if-not (*pending-paths* path)
 	    (do
 			  (binding [*pending-paths* (conj *pending-paths* path)]
-			    (clojure.osgi.ClojureOSGi/load  (.substring path 1) *bundle*)
+			    (clojure.osgi.internal.ClojureOSGi/load  (.substring path 1) *bundle*)
 	 	    )
 	    )
 	  )
