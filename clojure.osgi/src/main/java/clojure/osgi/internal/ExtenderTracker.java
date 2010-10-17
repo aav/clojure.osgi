@@ -126,7 +126,6 @@ public class ExtenderTracker extends BundleTracker {
 
 	}
 
-	@Override
 	public void close() {
 		logTracker.close();
 		super.close();
