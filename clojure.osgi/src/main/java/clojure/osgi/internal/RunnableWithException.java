@@ -9,26 +9,8 @@
  *    Laurent PETIT - initial API and implementation
  *******************************************************************************/
 
-package clojure.osgi;
+package clojure.osgi.internal;
 
-import java.net.URL;
-
-import org.osgi.framework.Bundle;
-
-public class BundleClassLoader extends ClassLoader {
-	private Bundle _bundle;
-
-	public BundleClassLoader(Bundle bundle) {
-		_bundle = bundle;
-	}
-
-	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		return _bundle.loadClass(name);
-	}
-
-	@Override
-	public URL getResource(String name) {
-		return _bundle.getResource(name);
-	}
+public interface RunnableWithException {
+	void run() throws Exception;
 }

@@ -5,7 +5,7 @@
 <booleanAttribute key="automaticValidate" value="false"/>
 <stringAttribute key="bootstrap" value=""/>
 <stringAttribute key="checked" value="[NONE]"/>
-<booleanAttribute key="clearConfig" value="false"/>
+<booleanAttribute key="clearConfig" value="true"/>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/Loading_Example"/>
 <booleanAttribute key="default" value="true"/>
 <booleanAttribute key="default_auto_start" value="true"/>
@@ -20,5 +20,5 @@
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
-<stringAttribute key="workspace_bundles" value="clojure.osgi@default:default,org.clojure.contrib@default:default,clojure.osgi.example.loading.bundle2@default:default,clojure.osgi.example.loading.bundle1@default:default,org.clojure@default:default"/>
+<stringAttribute key="workspace_bundles" value="org.clojure@default:default,clojure.osgi@3:default,clojure.osgi.example.loading.bundle2@default:true,org.clojure.contrib@default:default,clojure.osgi.example.loading.bundle1@default:true"/>
 </launchConfiguration>

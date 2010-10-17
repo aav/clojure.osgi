@@ -10,6 +10,8 @@
 
 
 (defn- bundle-start [context]
+  (println "tracking service")
+
   (track-service MyService
     (reify ServiceTrackerCustomizer
       (addingService [_ reference]

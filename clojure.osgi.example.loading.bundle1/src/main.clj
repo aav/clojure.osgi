@@ -6,9 +6,13 @@
 (println "main.clj(bundle1): loaded. Bundle symbolic name is:" (.. *bundle* getSymbolicName))
 
 (defn- bundle-start [context]
-	(println "main.clj(bundle1): activator is called")
-
+	(println "main.clj(bundle1): bundle-start is called")
 )
+
+(defn- bundle-stop [context]
+	(println "main.clj(bundle1): bundle-stop is called")
+)
+
 
 (try
   (use 'clojure.osgi.example.loading.bundle2.internal.private)
