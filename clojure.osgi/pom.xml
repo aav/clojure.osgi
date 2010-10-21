@@ -5,7 +5,7 @@
 	<groupId>clojure.osgi</groupId>
 	<artifactId>clojure.osgi</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2.10</version>
+	<version>1.2.11.EA</version>
 	<name>ClojureOSGI</name>
 
 	<properties>
