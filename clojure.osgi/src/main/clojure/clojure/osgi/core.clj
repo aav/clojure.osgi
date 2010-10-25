@@ -50,6 +50,9 @@
   (.getSymbolicName *bundle*)
 ) 
 
+(defn bundle-class-loader [bundle]
+  (clojure.osgi.internal.BundleClassLoader. bundle)
+)
 
 
 
