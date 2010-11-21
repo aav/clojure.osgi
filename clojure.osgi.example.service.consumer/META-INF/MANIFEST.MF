@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Consumer
 Bundle-SymbolicName: clojure.osgi.example.service.consumer
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: clojure.osgi.example.service.consumer.ServiceConsumerActivator
+Clojure-Require: clojure.osgi.example.service.consumer.service-consumer
+Clojure-ActivatorNamespace: clojure.osgi.example.service.consumer.service-consumer
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: clojure.lang,
  clojure.osgi;version="1.2.0",

@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Service
 Bundle-SymbolicName: clojure.osgi.example.service.producer
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: clojure.osgi.example.service.producer.ServiceProducerActivator
-Bundle-ActivationPolicy: lazy
+Clojure-Require: clojure.osgi.example.service.producer.service-producer
+Clojure-ActivatorNamespace: clojure.osgi.example.service.producer.service-producer
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: clojure;version="1.2.0",
  clojure.lang;version="1.2.0",
