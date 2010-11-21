@@ -1,5 +1,4 @@
 (ns clojure.osgi.core
-  (:import (clojure.osgi.internal EquinoxBundleIdExtractor) (clojure.lang RT))
 )
 
 (def *bundle* nil)
@@ -29,9 +28,6 @@
 ; copy from clojure.core - END
 
 
-(def equinox-extractor (EquinoxBundleIdExtractor.))
-
-
 (defn bundle-name []
   (.getSymbolicName *bundle*)
 ) 
@@ -58,9 +54,27 @@
    )
 )
 
-(defn- bundle-for-resource [bundle resource]
-  (if-let [url (.getResource bundle resource)]
-    (.getBundle (.getBundleContext bundle) (.extractBundleId equinox-extractor url))
+
+(defmulti bundle-for-resource (constantly (System/getProperty "org.osgi.framework.vendor")))
+
+(defmethod bundle-for-resource "Eclipse" [bundle resource]
+  (letfn 
+    [
+      (bundle-id [url]
+				(let [host (.getHost url) dot (.indexOf host  (int \.))]
+				  (Integer/parseInt
+				    (if (and (>= dot 0) (< dot (- (count host) 1)))
+				      (.substring host 0 dot)
+				      host
+				    ) 
+				  )
+				)
+      )
+    ]
+
+	  (if-let [url (.getResource bundle resource)]
+	    (.getBundle (.getBundleContext bundle) (bundle-id url))
+	  )
   )
 )
 
