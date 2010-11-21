@@ -6,15 +6,14 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import clojure.lang.Compiler;
-import clojure.lang.IPersistentMap;
 import clojure.lang.RT;
 import clojure.lang.Symbol;
 import clojure.lang.Var;
 
 public class ClojureOSGi {
 	static final private Var REQUIRE = RT.var("clojure.core", "require");
-	static final private Var OSGI_REQUIRE = RT.var("clojure.osgi.core", "osgi-require");
-	static final private Var BUNDLE = RT.var("clojure.osgi.core", "*bundle*");
+	static final private Var WITH_BUNDLE = RT.var("clojure.osgi.core", "with-bundle*");
+	
 	private static BundleContext s_Context;
 	private static boolean s_Initialized;
 
@@ -22,10 +21,14 @@ public class ClojureOSGi {
 		s_Context = aContext;
 
 		if (!s_Initialized) {
-			withBundle(s_Context.getBundle(), new RunnableWithException() {
-				public void run() throws Exception {
-					REQUIRE.invoke(Symbol.intern("clojure.main"));
-					REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
+			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
+				public void run() {
+					try {
+						REQUIRE.invoke(Symbol.intern("clojure.main"));
+						REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			});
 
@@ -37,7 +40,7 @@ public class ClojureOSGi {
 		try {
 			withBundle(aBundle, new RunnableWithException() {
 				public void run() throws Exception {
-					OSGI_REQUIRE.invoke(Symbol.intern(aName));
+					REQUIRE.invoke(Symbol.intern(aName));
 				}
 			});
 		} catch (Exception aEx) {
@@ -46,7 +49,6 @@ public class ClojureOSGi {
 	}
 
 	public static void loadAOTClass(final BundleContext aContext, final String fullyQualifiedAOTClassName) throws Exception {
-
 		withBundle(aContext.getBundle(), new RunnableWithException() {
 			public void run() throws Exception {
 				Class.forName(fullyQualifiedAOTClassName, true, new BundleClassLoader(aContext.getBundle()));
@@ -55,7 +57,6 @@ public class ClojureOSGi {
 	}
 	
 	public static void load(final String aName, Bundle aBundle) {
-
 		try {
 			URL url = aBundle.getResource(aName + ".clj");
 			if (url != null) {
@@ -75,30 +76,33 @@ public class ClojureOSGi {
 		}
 	}
 
-	public static void withBundle(Bundle aBundle, RunnableWithException aCode) throws Exception {
-		ClassLoader loader = new BundleClassLoader(aBundle);
-		IPersistentMap bindings = RT.map(BUNDLE, aBundle, Compiler.LOADER, loader);
-
-		boolean pushed = true;
-
-		ClassLoader saved = Thread.currentThread().getContextClassLoader();
-
+	private static void withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
 		try {
-			Thread.currentThread().setContextClassLoader(loader);
-
-			try {
-				Var.pushThreadBindings(bindings);
-			} catch (Exception aEx) {
-				pushed = false;
-				throw aEx;
-			}
-
-			aCode.run();
-		} finally {
-			if (pushed)
-				Var.popThreadBindings();
-
-			Thread.currentThread().setContextClassLoader(saved);
+			Var.pushThreadBindings(RT.map(Compiler.LOADER, aLoader));
+			aRunnable.run();
 		}
+		finally {
+			Var.popThreadBindings();
+		}
+	}
+	
+	public static void withLoader(ClassLoader aLoader, final Runnable aRunnable) throws Exception {
+		withLoader(aLoader, new RunnableWithException() {
+			public void run() throws Exception {
+				aRunnable.run();
+			}
+		});
+	}
+	
+	public static void withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
+		WITH_BUNDLE.invoke(aBundle, new Runnable() {
+			public void run() {
+				try {
+					aCode.run();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
 	}
 }
