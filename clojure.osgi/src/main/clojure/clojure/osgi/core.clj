@@ -3,6 +3,12 @@
 
 (def *bundle* nil)
 
+(defmacro with-captured-bundle [& body]
+  `(let [~'*bundle* *bundle*]
+     (do ~@body)
+   ) 
+)
+
 ; copy from clojure.core BEGIN
 (defn- root-resource
   "Returns the root directory path for a lib"
@@ -28,9 +34,15 @@
 ; copy from clojure.core - END
 
 
-(defn bundle-name []
-  (.getSymbolicName *bundle*)
-) 
+(with-captured-bundle
+	(defn bundle-name []
+	  (.getSymbolicName *bundle*)
+	)
+
+	(defn get-bundle [bid]
+    (.. *bundle* (getBundleContext) (getBundle bid)) 
+	)
+)
 
 (defn bundle-class-loader [bundle]
   (clojure.osgi.internal.BundleClassLoader. bundle)
@@ -40,20 +52,19 @@
 
 (defn with-bundle* [bundle function & params]
   (binding [*bundle* bundle load (osgi-load bundle)]
-     (clojure.osgi.internal.ClojureOSGi/withLoader 
-       (bundle-class-loader bundle) 
+     (clojure.osgi.internal.ClojureOSGi/withLoader (bundle-class-loader bundle) 
        (if (seq? params)
          (apply partial (cons function params)) function)
      )
   )   
 )
 
+
 (defmacro with-bundle [bundle & body]
   `(with-bundle* ~bundle
       (fn [] ~@body)
    )
 )
-
 
 (defmulti bundle-for-resource (constantly (System/getProperty "org.osgi.framework.vendor")))
 
