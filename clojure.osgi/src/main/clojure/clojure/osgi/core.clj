@@ -1,4 +1,5 @@
 (ns clojure.osgi.core
+  (:import (clojure.osgi.internal EquinoxBundleIdExtractor) (clojure.lang RT))
 )
 
 (def *bundle* nil)
@@ -27,22 +28,9 @@
 
 ; copy from clojure.core - END
 
-(defn- osgi-load [bundle]
-  (fn [path]
-	  (let [^String path (if (.startsWith path "/")
-	    path
-	    (str (root-directory (ns-name *ns*)) \/ path))]
-	
-		  (if-not (*pending-paths* path)
-		    (do
-				  (binding [*pending-paths* (conj *pending-paths* path)]
-				    (clojure.osgi.internal.ClojureOSGi/load  (.substring path 1) bundle)
-		 	    )
-		    )
-		  )
-	  )
-  )
-)
+
+(def equinox-extractor (EquinoxBundleIdExtractor.))
+
 
 (defn bundle-name []
   (.getSymbolicName *bundle*)
@@ -52,10 +40,15 @@
   (clojure.osgi.internal.BundleClassLoader. bundle)
 )
 
-(defn with-bundle* [bundle function]
+(declare osgi-load)
+
+(defn with-bundle* [bundle function & params]
   (binding [*bundle* bundle load (osgi-load bundle)]
      (clojure.osgi.internal.ClojureOSGi/withLoader 
-       (bundle-class-loader bundle) function)
+       (bundle-class-loader bundle) 
+       (if (seq? params)
+         (apply partial (cons function params)) function)
+     )
   )   
 )
 
@@ -64,3 +57,32 @@
       (fn [] ~@body)
    )
 )
+
+(defn- bundle-for-resource [bundle resource]
+  (if-let [url (.getResource bundle resource)]
+    (.getBundle (.getBundleContext bundle) (.extractBundleId equinox-extractor url))
+  )
+)
+
+(defn- osgi-load [bundle]
+  (fn [path]
+	  (let [^String path (if (.startsWith path "/")
+	    path
+	    (str (root-directory (ns-name *ns*)) \/ path))]
+	
+		  (if-not (*pending-paths* path)
+			  (binding [*pending-paths* (conj *pending-paths* path)]
+          (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
+					  (if-let [bundle (bundle-for-resource bundle (str path ".clj"))]
+              (with-bundle* bundle load)					    
+					    (load))
+          )
+	 	    )
+		  )
+	  )
+  )
+)
+
+
+
+

@@ -1,7 +1,5 @@
 package clojure.osgi.internal;
 
-import java.net.URL;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -14,12 +12,9 @@ public class ClojureOSGi {
 	static final private Var REQUIRE = RT.var("clojure.core", "require");
 	static final private Var WITH_BUNDLE = RT.var("clojure.osgi.core", "with-bundle*");
 	
-	private static BundleContext s_Context;
 	private static boolean s_Initialized;
 
 	public static void initialize(BundleContext aContext) throws Exception {
-		s_Context = aContext;
-
 		if (!s_Initialized) {
 			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
 				public void run() {
@@ -27,7 +22,7 @@ public class ClojureOSGi {
 						REQUIRE.invoke(Symbol.intern("clojure.main"));
 						REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
 					} catch (Exception e) {
-						e.printStackTrace();
+						throw new RuntimeException("cannot initialize clojure.osgi", e);
 					}
 				}
 			});
@@ -56,26 +51,6 @@ public class ClojureOSGi {
 		});
 	}
 	
-	public static void load(final String aName, Bundle aBundle) {
-		try {
-			URL url = aBundle.getResource(aName + ".clj");
-			if (url != null) {
-				BundleIdExtractor extractor = new EquinoxBundleIdExtractor();
-
-				Bundle bundle = s_Context.getBundle(extractor.extractBundleId(url));
-
-				withBundle(bundle, new RunnableWithException() {
-					public void run() throws Exception {
-						RT.load(aName);
-					}
-				});
-			} else
-				RT.load(aName);
-		} catch (Exception aEx) {
-			throw new RuntimeException(aEx);
-		}
-	}
-
 	private static void withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
 		try {
 			Var.pushThreadBindings(RT.map(Compiler.LOADER, aLoader));
