@@ -11,18 +11,28 @@ import clojure.lang.Var;
 public class ClojureOSGi {
 	static final private Var REQUIRE = RT.var("clojure.core", "require");
 	static final private Var WITH_BUNDLE = RT.var("clojure.osgi.core", "with-bundle*");
+	static final private Var BUNDLE = RT.var("clojure.osgi.core", "*bundle*");
 	
 	private static boolean s_Initialized;
 
-	public static void initialize(BundleContext aContext) throws Exception {
+	public static void initialize(final BundleContext aContext) throws Exception {
 		if (!s_Initialized) {
 			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
 				public void run() {
+					boolean pushed = false;
+					
 					try {
 						REQUIRE.invoke(Symbol.intern("clojure.main"));
+						
+						Var.pushThreadBindings(RT.map(BUNDLE, aContext.getBundle()));
+						pushed = true;
+						
 						REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
 					} catch (Exception e) {
 						throw new RuntimeException("cannot initialize clojure.osgi", e);
+					}finally{
+						if(pushed)
+							Var.popThreadBindings();
 					}
 				}
 			});
