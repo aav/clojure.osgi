@@ -1,6 +1,8 @@
 (ns clojure.osgi.core
 )
 
+(def *bundle* nil)
+
 ; copy from clojure.core BEGIN
 (defn- root-resource
   "Returns the root directory path for a lib"
@@ -25,25 +27,21 @@
 
 ; copy from clojure.core - END
 
-(defn osgi-load [path]
-  (let [^String path (if (.startsWith path "/")
-    path
-    (str (root-directory (ns-name *ns*)) \/ path))]
-
-	  (if-not (*pending-paths* path)
-	    (do
-			  (binding [*pending-paths* (conj *pending-paths* path)]
-			    (clojure.osgi.internal.ClojureOSGi/load  (.substring path 1) *bundle*)
-	 	    )
-	    )
+(defn- osgi-load [bundle]
+  (fn [path]
+	  (let [^String path (if (.startsWith path "/")
+	    path
+	    (str (root-directory (ns-name *ns*)) \/ path))]
+	
+		  (if-not (*pending-paths* path)
+		    (do
+				  (binding [*pending-paths* (conj *pending-paths* path)]
+				    (clojure.osgi.internal.ClojureOSGi/load  (.substring path 1) bundle)
+		 	    )
+		    )
+		  )
 	  )
   )
-)
-
-(defn osgi-require [name]
- (binding [load osgi-load]
-   (require name)
- )
 )
 
 (defn bundle-name []
@@ -54,5 +52,15 @@
   (clojure.osgi.internal.BundleClassLoader. bundle)
 )
 
+(defn with-bundle* [bundle function]
+  (binding [*bundle* bundle load (osgi-load bundle)]
+     (clojure.osgi.internal.ClojureOSGi/withLoader 
+       (bundle-class-loader bundle) function)
+  )   
+)
 
-
+(defmacro with-bundle [bundle & body]
+  `(with-bundle* ~bundle
+      (fn [] ~@body)
+   )
+)
