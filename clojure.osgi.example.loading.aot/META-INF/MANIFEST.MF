@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: BundleAOT
 Bundle-SymbolicName: clojure.osgi.example.loading.aot
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: clojure.osgi.example.loading.aot.BundleAOTActivator
+Clojure-Require: clojure.osgi.example.loading.aot.main
+Clojure-ActivatorNamespace: clojure.osgi.example.loading.aot.main
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ClassPath: .,
  classes/

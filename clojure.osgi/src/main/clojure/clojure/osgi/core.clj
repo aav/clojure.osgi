@@ -1,5 +1,5 @@
 (ns clojure.osgi.core
-)
+(:import [clojure.osgi.internal BundleClassLoader]))
 
 (def *bundle* nil)
 
@@ -33,7 +33,7 @@
 ) 
 
 (defn bundle-class-loader [bundle]
-  (clojure.osgi.internal.BundleClassLoader. bundle)
+  (BundleClassLoader. bundle)
 )
 
 (declare osgi-load)
@@ -77,6 +77,14 @@
 	  )
   )
 )
+
+(defn load-aot-class [bundle-context class-name]
+  (with-bundle (.getBundle bundle-context)
+    (Class/forName class-name 
+                   true 
+                   (BundleClassLoader. 
+                     (.getBundle bundle-context))))
+) 
 
 (defn- osgi-load [bundle]
   (fn [path]
