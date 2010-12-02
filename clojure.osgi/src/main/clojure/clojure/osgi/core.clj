@@ -73,7 +73,7 @@
     ]
 
 	  (if-let [url (.getResource bundle resource)]
-	    (.getBundle (.getBundleContext bundle) (bundle-id url))
+	    (.getBundle (.getBundleContext *clojure-osgi-bundle*) (bundle-id url))
 	  )
   )
 )
