@@ -17,6 +17,8 @@ public class ClojureOSGi {
 
 	public static void initialize(final BundleContext aContext) throws Exception {
 		if (!s_Initialized) {
+			RT.var("clojure.osgi.core", "*clojure-osgi-bundle*", aContext.getBundle());
+			
 			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
 				public void run() {
 					boolean pushed = false;
