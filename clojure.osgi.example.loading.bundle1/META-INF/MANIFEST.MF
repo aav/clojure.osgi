@@ -7,5 +7,6 @@ Clojure-Require: main
 Clojure-ActivatorNamespace: main
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Import-Package: clojure.lang;version="1.2.0",
+ clojure.osgi;version="1.2.0",
  clojure.osgi.example.loading.bundle2,
  org.osgi.framework
