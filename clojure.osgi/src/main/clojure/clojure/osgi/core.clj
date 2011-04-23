@@ -58,6 +58,11 @@
   *currently-loading* nil)
 
 
+(defn bundle-class-loader [bundle]
+  (BundleClassLoader. bundle)
+)
+
+
 (let [bundle *bundle*]
 	(defn bundle-name []
 	  (.getSymbolicName bundle)
@@ -81,7 +86,7 @@
 	
 	        :default
 	          (let [[prefix & args] arg]
-	             (map #(str (name prefix) "." (name %)) args))
+	             (map #(str (name prefix) "."  (if (coll? %) (name (first %)) (name %))) args))
 	      )
 	    )
 
