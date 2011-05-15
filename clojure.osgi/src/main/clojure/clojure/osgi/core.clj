@@ -7,7 +7,7 @@
 
 (def ^{:private true} osgi-debug false)
 
-(def *bundle*)
+(def ^:dynamic *bundle*)
 
 ; copy from clojure.core BEGIN
 (defn- libspec?
@@ -43,11 +43,11 @@
 
 (defonce
   ^{:private true
+    :dynamic true
     :doc "the set of paths currently being loaded by this thread"}
   *pending-paths* #{})
 
 ; copy from clojure.core - END
-
 
 (defn- full-path [path]
 	(if (.startsWith path "/")
@@ -57,7 +57,7 @@
 
 
 (defonce 
-  ^{:private true}
+  ^{:private true :dynamic true}
   *currently-loading* nil)
 
 
@@ -103,9 +103,12 @@
      (let [cname (str lib "__init")]
        (try
 	       (.loadClass *bundle* cname)
-	       (catch ClassNotFoundException _
-           (when osgi-debug
-             (println "class not found: " cname))
+	       (catch RuntimeException e
+           (if (instance? ClassNotFoundException (.getCause e)) 
+             (when osgi-debug
+               (println "class not found: " cname))
+             (throw e)
+           )
          )
        )
      )
@@ -131,27 +134,30 @@
   )
 )
 
-; override clojure.core/use
-(let [original use]
-	(defn- osgi-use [& args]
-	  (when osgi-debug
-	 	  (println (str "use " args " from " (.getSymbolicName *bundle*) *currently-loading*)))
-	
-	  (check-libs (libspecs args))
-	
-	  (apply original args)
-	)
+(alter-var-root (find-var (symbol "clojure.core" "use")) 
+  (fn [original]
+    (fn [& args]
+		  (when osgi-debug
+		 	  (println (str "use " args " from " (.getSymbolicName *bundle*) *currently-loading*)))
+		
+		  (check-libs (libspecs args))
+		
+		  (apply original args)
+    )
+  )
 )
 
-(let [original require]
-	(defn- osgi-require [& args]
-    (when osgi-debug
-      (println (str "require " args " from " (.getSymbolicName *bundle*) *currently-loading*)))
-
-	  (check-libs (libspecs args))
-
-	  (apply original args)
-	)
+(alter-var-root (find-var (symbol "clojure.core" "require")) 
+  (fn [original]
+    (fn [& args]
+	    (when osgi-debug
+	      (println (str "require " args " from " (.getSymbolicName *bundle*) *currently-loading*)))
+	
+		  (check-libs (libspecs args))
+	
+		  (apply original args)
+    )
+  )
 )
 
 (declare with-bundle*)
@@ -175,35 +181,36 @@
 
 
 
-; OSGi version of clojure's load 
-(defn- osgi-load [path]
-  (when osgi-debug
-    (println (str "load " path " from " (.getSymbolicName *bundle*))))
- 
-  (let [path (full-path path)]
-	  (if-not (*pending-paths* path)
-		  (binding [
-                *pending-paths* (conj *pending-paths* path)
-                *currently-loading* path]
-        (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
-				  (if-let [bundle (bundle-for-resource *bundle* (str path ".clj"))]
-            (with-bundle* bundle load)					    
-				    (load))
-        )
- 	    )
-	  )
-  )
+(alter-var-root (find-var (symbol "clojure.core" "load")) 
+  (fn [original]
+    (fn [path]
+		  (when osgi-debug
+		    (println (str "load " path " from " (.getSymbolicName *bundle*))))
+		 
+		  (let [path (full-path path)]
+			  (if-not (*pending-paths* path)
+				  (binding [
+		                *pending-paths* (conj *pending-paths* path)
+		                *currently-loading* path]
+		        (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
+						  (if-let [bundle (bundle-for-resource *bundle* (str path ".clj"))]
+		            (with-bundle* bundle load)					    
+						    (load))
+		        )
+		 	    )
+			  )
+		  )
+    )
+  ) 
 )
+
 
 ; invokes function in the environment set-up for specified bundle:
 ;   - classloader is is set to appropriate bundle class loader
 ;   - clojure.core/load is re-bound with osgi-load
 ;   - clojure.core/use is re-bound with osgi-use
 (defn with-bundle* [bundle function & params]
-  (binding [*bundle* bundle 
-            load osgi-load
-            use  osgi-use
-            require osgi-require]
+  (binding [*bundle* bundle]
      (clojure.osgi.internal.ClojureOSGi/withLoader (BundleClassLoader. bundle) 
        (if (seq? params)
          (apply partial (cons function params)) function)
