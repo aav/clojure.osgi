@@ -11,7 +11,7 @@ import clojure.lang.Var;
 public class ClojureOSGi {
 	static final private Var REQUIRE = RT.var("clojure.core", "require");
 	static final private Var WITH_BUNDLE = RT.var("clojure.osgi.core", "with-bundle*");
-	static final private Var BUNDLE = RT.var("clojure.osgi.core", "*bundle*");
+	static final private Var BUNDLE = RT.var("clojure.osgi.core", "*bundle*").setDynamic();
 	
 	private static boolean s_Initialized;
 
