@@ -1,5 +1,8 @@
 (ns clojure.osgi.core
-(:import [clojure.osgi.internal BundleClassLoader]))
+  (:use    clojure.osgi.services)
+  (:import [clojure.osgi.internal BundleClassLoader])
+  (:import [clojure.osgi IClojureOSGi])
+)
 
 
 (def ^{:private true} osgi-debug false)
@@ -215,10 +218,14 @@
    )
 )
 
-(defn load-aot-class [bundle-context class-name]
-  (with-bundle (.getBundle bundle-context)
-    (Class/forName class-name 
-                   true 
-                   (BundleClassLoader. 
-                     (.getBundle bundle-context))))
-)
+(register-service IClojureOSGi
+   (require [_ bundle name]
+     (with-bundle bundle
+        (require (symbol name))))
+
+   (loadAOTClass [_ bundle name]
+		 (with-bundle bundle
+		    (Class/forName name true 
+	        (BundleClassLoader. bundle))))
+) 
+

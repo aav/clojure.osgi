@@ -16,9 +16,9 @@
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Declipse.ignoreApp=true -Dosgi.noShutdown=true"/>
 <stringAttribute key="pde.version" value="3.3"/>
 <booleanAttribute key="show_selected_only" value="false"/>
-<stringAttribute key="target_bundles" value="org.eclipse.osgi@-1:true,org.eclipse.osgi.services@default:default"/>
+<stringAttribute key="target_bundles" value="org.eclipse.osgi.services@default:default,org.eclipse.osgi@-1:true"/>
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>
 <booleanAttribute key="useDefaultConfigArea" value="true"/>
-<stringAttribute key="workspace_bundles" value="org.clojure@default:default,clojure.osgi@3:default,clojure.osgi.example.loading.bundle2@default:true,org.clojure.contrib@default:default,clojure.osgi.example.loading.bundle1@default:true"/>
+<stringAttribute key="workspace_bundles" value="clojure.osgi@3:default,clojure.osgi.example.loading.bundle1@default:true,org.clojure.contrib@default:default,clojure.osgi.example.loading.bundle2@default:true,org.clojure@default:default"/>
 </launchConfiguration>

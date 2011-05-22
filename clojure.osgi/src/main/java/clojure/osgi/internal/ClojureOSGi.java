@@ -55,14 +55,6 @@ public class ClojureOSGi {
 		}
 	}
 
-	public static void loadAOTClass(final BundleContext aContext, final String fullyQualifiedAOTClassName) throws Exception {
-		withBundle(aContext.getBundle(), new RunnableWithException() {
-			public void run() throws Exception {
-				Class.forName(fullyQualifiedAOTClassName, true, new BundleClassLoader(aContext.getBundle()));
-			}
-		});
-	}
-	
 	private static void withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
 		try {
 			Var.pushThreadBindings(RT.map(Compiler.LOADER, aLoader));
@@ -81,7 +73,7 @@ public class ClojureOSGi {
 		});
 	}
 	
-	public static void withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
+	static void withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
 		WITH_BUNDLE.invoke(aBundle, new Runnable() {
 			public void run() {
 				try {
