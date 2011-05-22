@@ -7,7 +7,7 @@
 
 ;name of java interface that corresponds to given protocol
 (defn protocol-interface-name [protocol]
-	{:pre [(map? protocol)]}
+  {:pre [(map? protocol)]}
 
   (.getName (:on-interface protocol))
 )
@@ -59,7 +59,19 @@
 
 (defn register-service* [protocol options service] 
   (let [context (.getBundleContext *bundle*)]
-    (.registerService context (protocol-interface-name protocol) service (map-to-properties options))    
+    (.registerService context
+		  (cond
+		     (class? protocol)
+		       (.getName protocol)
+		   
+		     (map? protocol)
+           (protocol-interface-name protocol)
+		
+		     :default
+		       (throw (IllegalStateException.))
+		  )
+
+      service (map-to-properties options))    
   )
 )
 
