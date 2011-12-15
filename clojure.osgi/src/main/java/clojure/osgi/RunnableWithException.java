@@ -9,8 +9,8 @@
  *    Laurent PETIT - initial API and implementation
  *******************************************************************************/
 
-package clojure.osgi.internal;
+package clojure.osgi;
 
 public interface RunnableWithException {
-	void run() throws Exception;
+	Object run() throws Exception;
 }

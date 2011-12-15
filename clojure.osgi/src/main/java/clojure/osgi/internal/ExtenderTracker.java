@@ -14,6 +14,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import clojure.lang.RT;
 import clojure.lang.Var;
+import clojure.osgi.RunnableWithException;
 
 public class ExtenderTracker extends BundleTracker {
 	private Set<Long> requireProcessed = new HashSet<Long>();
@@ -117,7 +118,7 @@ public class ExtenderTracker extends BundleTracker {
 			if (var.isBound()) {
 				try {
 					ClojureOSGi.withBundle(bundle, new RunnableWithException() {
-						public void run() throws Exception {
+						public Object run() throws Exception {
 							if (log != null)
 								log.log(LogService.LOG_DEBUG,
 										String.format(
@@ -125,6 +126,8 @@ public class ExtenderTracker extends BundleTracker {
 												ns, callbackFunction, bundle));
 
 							var.invoke(bundle.getBundleContext());
+							
+							return null;
 						}
 					});
 

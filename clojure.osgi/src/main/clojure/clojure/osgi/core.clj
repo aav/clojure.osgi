@@ -229,6 +229,10 @@
    (require [_ bundle name]
      (with-bundle bundle
         (require (symbol name))))
+        
+   (withBundle [_ bundle r]
+     (with-bundle* bundle #(.run r)))     
+        
 
    (loadAOTClass [_ bundle name]
 		 (with-bundle bundle

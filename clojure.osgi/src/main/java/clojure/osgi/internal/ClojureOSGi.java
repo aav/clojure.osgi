@@ -7,6 +7,7 @@ import clojure.lang.Compiler;
 import clojure.lang.RT;
 import clojure.lang.Symbol;
 import clojure.lang.Var;
+import clojure.osgi.RunnableWithException;
 
 public class ClojureOSGi {
 	static final private Var REQUIRE = RT.var("clojure.core", "require");
@@ -20,7 +21,7 @@ public class ClojureOSGi {
 			RT.var("clojure.osgi.core", "*clojure-osgi-bundle*", aContext.getBundle());
 			
 			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
-				public void run() {
+				public Object run() {
 					boolean pushed = false;
 					
 					try {
@@ -36,6 +37,8 @@ public class ClojureOSGi {
 						if(pushed)
 							Var.popThreadBindings();
 					}
+					
+					return null;
 				}
 			});
 
@@ -46,8 +49,10 @@ public class ClojureOSGi {
 	public static void require(Bundle aBundle, final String aName) {
 		try {
 			withBundle(aBundle, new RunnableWithException() {
-				public void run() throws Exception {
+				public Object run() throws Exception {
 					REQUIRE.invoke(Symbol.intern(aName));
+					
+					return null;
 				}
 			});
 		} catch (Exception aEx) {
@@ -55,10 +60,10 @@ public class ClojureOSGi {
 		}
 	}
 
-	private static void withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
+	private static Object withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
 		try {
 			Var.pushThreadBindings(RT.map(Compiler.LOADER, aLoader));
-			aRunnable.run();
+			return aRunnable.run();
 		}
 		finally {
 			Var.popThreadBindings();
@@ -67,8 +72,10 @@ public class ClojureOSGi {
 	
 	public static void withLoader(ClassLoader aLoader, final Runnable aRunnable) throws Exception {
 		withLoader(aLoader, new RunnableWithException() {
-			public void run() throws Exception {
+			public Object run() throws Exception {
 				aRunnable.run();
+				
+				return null;
 			}
 		});
 	}
