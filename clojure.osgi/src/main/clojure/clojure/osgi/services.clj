@@ -1,7 +1,9 @@
 (ns clojure.osgi.services
-  (:require (clojure.osgi core))  
+  (:use (clojure.osgi core))  
   
   (:import 
+    (clojure.osgi IClojureOSGi)
+    (clojure.osgi.internal BundleClassLoader)
 		(org.osgi.util.tracker ServiceTracker ServiceTrackerCustomizer)
     (org.osgi.framework Filter FrameworkUtil)
 	)
@@ -25,27 +27,6 @@
 		result
 	)
 )
-
-
-(register-service IClojureOSGi
-   (require [_ bundle name]
-     (with-bundle bundle
-        (require (symbol name))))
-        
-   (withBundle [_ bundle r]
-     (with-bundle* bundle #(.run r)))     
-        
-
-   (loadAOTClass [_ bundle name]
-		 (with-bundle bundle
-		    (Class/forName name true 
-	        (BundleClassLoader. bundle))))
-) 
-
-
-
-
-
 
 (defn- ocfilter [name]
   (str "(objectClass=" name ")"))
@@ -124,6 +105,23 @@
 	   )
 	 )
 )
+
+
+
+(register-service IClojureOSGi
+   (require [_ bundle name]
+     (with-bundle bundle
+        (require (symbol name))))
+        
+   (withBundle [_ bundle r]
+     (with-bundle* bundle #(.run r)))     
+        
+
+   (loadAOTClass [_ bundle name]
+		 (with-bundle bundle
+		    (Class/forName name true 
+	        (BundleClassLoader. bundle))))
+) 
 
 
 

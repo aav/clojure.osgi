@@ -31,6 +31,7 @@ public class ClojureOSGi {
 						pushed = true;
 						
 						REQUIRE.invoke(Symbol.intern("clojure.osgi.core"));
+						REQUIRE.invoke(Symbol.intern("clojure.osgi.services"));
 					} catch (Exception e) {
 						throw new RuntimeException("cannot initialize clojure.osgi", e);
 					}finally{
