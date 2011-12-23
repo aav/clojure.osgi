@@ -1,7 +1,9 @@
 (ns clojure.osgi.services
-  (:use (clojure.osgi core filters))
+  (:require (clojure.osgi core))  
+  
   (:import 
 		(org.osgi.util.tracker ServiceTracker ServiceTrackerCustomizer)
+    (org.osgi.framework Filter FrameworkUtil)
 	)
 )
 
@@ -24,19 +26,55 @@
 	)
 )
 
+
+(register-service IClojureOSGi
+   (require [_ bundle name]
+     (with-bundle bundle
+        (require (symbol name))))
+        
+   (withBundle [_ bundle r]
+     (with-bundle* bundle #(.run r)))     
+        
+
+   (loadAOTClass [_ bundle name]
+		 (with-bundle bundle
+		    (Class/forName name true 
+	        (BundleClassLoader. bundle))))
+) 
+
+
+
+
+
+
+(defn- ocfilter [name]
+  (str "(objectClass=" name ")"))
+
+; service filter
+(defprotocol FilterProtocol
+	(get-filter [this])
+)
+
+(extend-protocol FilterProtocol
+	Filter
+		(get-filter [f] f)	
+
+	String
+		(get-filter [s] (FrameworkUtil/createFilter s))
+)
+
 (extend-protocol FilterProtocol
   clojure.lang.PersistentArrayMap ; assuming protocol is represented by a map
   (get-filter [p]
     (get-filter 
-      (osgi-filter
-        (= "objectClass" (protocol-interface-name p))))
+      (ocfilter
+       (protocol-interface-name p)))
   )
 
   java.lang.Class
   (get-filter [c]
     (get-filter
-      (osgi-filter
-        (= "objectClass" (.getName c))))
+      (ocfilter (.getName c)))
   )
 )
 

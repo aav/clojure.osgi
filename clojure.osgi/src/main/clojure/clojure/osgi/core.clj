@@ -1,5 +1,4 @@
 (ns clojure.osgi.core
-  (:use    clojure.osgi.services)
   (:import [clojure.osgi.internal BundleClassLoader])
   (:import [clojure.osgi IClojureOSGi])
 )
@@ -225,18 +224,4 @@
    )
 )
 
-(register-service IClojureOSGi
-   (require [_ bundle name]
-     (with-bundle bundle
-        (require (symbol name))))
-        
-   (withBundle [_ bundle r]
-     (with-bundle* bundle #(.run r)))     
-        
-
-   (loadAOTClass [_ bundle name]
-		 (with-bundle bundle
-		    (Class/forName name true 
-	        (BundleClassLoader. bundle))))
-) 
 
