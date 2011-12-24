@@ -1,5 +1,5 @@
 (ns clojure.osgi.core
-  (:import [clojure.osgi.internal BundleClassLoader])
+  (:import [clojure.osgi BundleClassLoader])
   (:import [clojure.osgi IClojureOSGi])
 )
 

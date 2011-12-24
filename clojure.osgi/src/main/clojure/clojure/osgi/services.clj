@@ -3,7 +3,7 @@
   
   (:import 
     (clojure.osgi IClojureOSGi)
-    (clojure.osgi.internal BundleClassLoader)
+    (clojure.osgi BundleClassLoader)
 		(org.osgi.util.tracker ServiceTracker ServiceTrackerCustomizer)
     (org.osgi.framework Filter FrameworkUtil)
 	)

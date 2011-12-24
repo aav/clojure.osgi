@@ -9,7 +9,7 @@
  *    Laurent PETIT - initial API and implementation
  *******************************************************************************/
 
-package clojure.osgi.internal;
+package clojure.osgi;
 
 import java.net.URL;
 
