@@ -1,5 +1,5 @@
 (ns clojure.osgi.core
-  (:import [clojure.osgi BundleClassLoader])
+  (:import [clojure.osgi BundleClassLoader RunnableWithException])
   (:import [clojure.osgi IClojureOSGi])
 )
 
@@ -210,9 +210,16 @@
 ;   - clojure.core/use is re-bound with osgi-use
 (defn with-bundle* [bundle function & params]
   (binding [*bundle* bundle]
-     (clojure.osgi.internal.ClojureOSGi/withLoader (BundleClassLoader. bundle) 
-       (if (seq? params)
-         (apply partial (cons function params)) function)
+     (clojure.osgi.internal.ClojureOSGi/withLoader (BundleClassLoader. bundle)
+       (if (instance? RunnableWithException function) 
+         function                                         
+         (reify RunnableWithException
+           (run [_]
+                (if (seq? params)
+                  (apply function params) (function))
+           )
+         )
+       )                                            
      )
   )   
 )

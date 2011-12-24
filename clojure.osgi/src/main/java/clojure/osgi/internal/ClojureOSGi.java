@@ -61,7 +61,7 @@ public class ClojureOSGi {
 		}
 	}
 
-	private static Object withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
+	public static Object withLoader(ClassLoader aLoader, RunnableWithException aRunnable) throws Exception {
 		try {
 			Var.pushThreadBindings(RT.map(Compiler.LOADER, aLoader));
 			return aRunnable.run();
@@ -71,6 +71,7 @@ public class ClojureOSGi {
 		}
 	}
 	
+	/*
 	public static void withLoader(ClassLoader aLoader, final Runnable aRunnable) throws Exception {
 		withLoader(aLoader, new RunnableWithException() {
 			public Object run() throws Exception {
@@ -79,17 +80,9 @@ public class ClojureOSGi {
 				return null;
 			}
 		});
-	}
+	}*/
 	
-	static void withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
-		WITH_BUNDLE.invoke(aBundle, new Runnable() {
-			public void run() {
-				try {
-					aCode.run();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
+	static Object withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
+		return WITH_BUNDLE.invoke(aBundle, aCode);
 	}
 }
