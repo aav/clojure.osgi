@@ -10,10 +10,8 @@ public class ClojureOSGiActivator implements BundleActivator {
 
 	public void start(BundleContext context) throws Exception {
 		ClojureOSGi.initialize(context);
-
 		tracker = new ExtenderTracker(context);
 		tracker.open();
-		
 	}
 
 	public void stop(BundleContext context) throws Exception {

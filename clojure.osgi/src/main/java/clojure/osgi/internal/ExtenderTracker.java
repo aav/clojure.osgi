@@ -24,7 +24,7 @@ public class ExtenderTracker extends BundleTracker {
 
 	private enum CallbackType {
 		START, STOP
-	};
+	}
 
 	public ExtenderTracker(BundleContext context) {
 		super(context, Bundle.STARTING | Bundle.ACTIVE | Bundle.STOPPING, null);
@@ -81,18 +81,16 @@ public class ExtenderTracker extends BundleTracker {
 		if (header != null) {
 			StringTokenizer lib = new StringTokenizer(header, ",");
 			while (lib.hasMoreTokens()) {
-				String ns = lib.nextToken().trim();
-
-				if (log != null)
+				final String ns = lib.nextToken().trim();
+                if (log != null)
 					log.log(LogService.LOG_DEBUG, String.format(
 							"requiring %s from bundle %s", ns, bundle));
-
 				ClojureOSGi.require(bundle, ns);
 			}
 		}
 	}
 
-	private String callbackFunctionName(CallbackType callback, String header) {
+    private String callbackFunctionName(CallbackType callback, String header) {
 		// TODO support callback function name customization. i.e.:
 		// Clojure-ActivatorNamespace:
 		// a.b.c.d;start-function="myStart";stop-function="myStop"
@@ -115,7 +113,7 @@ public class ExtenderTracker extends BundleTracker {
 		if (ns != null) {
 			final String callbackFunction = callbackFunctionName(callback, ns);
 			final Var var = RT.var(ns, callbackFunction);
-			if (var.isBound()) {
+            if (var.isBound()) {
 				try {
 					ClojureOSGi.withBundle(bundle, new RunnableWithException() {
 						public Object run() throws Exception {
@@ -134,9 +132,11 @@ public class ExtenderTracker extends BundleTracker {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			} else
+			} else {
 				throw new RuntimeException(String.format(
 						"'%s' is not bound in '%s'", callbackFunction, ns));
+
+            }
 		}
 	}
 

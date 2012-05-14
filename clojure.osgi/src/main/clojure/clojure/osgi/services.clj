@@ -1,7 +1,7 @@
 (ns clojure.osgi.services
-  (:use (clojure.osgi core))  
-  
-  (:import 
+  (:use (clojure.osgi core))
+
+  (:import
     (clojure.osgi IClojureOSGi)
     (clojure.osgi BundleClassLoader)
 		(org.osgi.util.tracker ServiceTracker ServiceTrackerCustomizer)
@@ -38,7 +38,7 @@
 
 (extend-protocol FilterProtocol
 	Filter
-		(get-filter [f] f)	
+		(get-filter [f] f)
 
 	String
 		(get-filter [s] (FrameworkUtil/createFilter s))
@@ -47,7 +47,7 @@
 (extend-protocol FilterProtocol
   clojure.lang.PersistentArrayMap ; assuming protocol is represented by a map
   (get-filter [p]
-    (get-filter 
+    (get-filter
       (ocfilter
        (protocol-interface-name p)))
   )
@@ -66,31 +66,31 @@
 )
 
 (defn track-service [filter customizer]
-  (let 
+  (let
     [context (.getBundleContext *bundle*)
      tracker (ServiceTracker. context (get-filter filter) customizer)]
-    
+
    	 (.open tracker)
 
    	 tracker
   )
 )
 
-(defn register-service* [protocol options service] 
+(defn register-service* [protocol options service]
   (let [context (.getBundleContext *bundle*)]
     (.registerService context
 		  (cond
 		     (class? protocol)
 		       (.getName protocol)
-		   
+
 		     (map? protocol)
            (protocol-interface-name protocol)
-		
+
 		     :default
 		       (throw (IllegalStateException.))
 		  )
 
-      service (map-to-properties options))    
+      service (map-to-properties options))
   )
 )
 
@@ -100,28 +100,28 @@
 
 	   `(register-service* ~protocol ~options
 		   (reify ~protocol
-	     		~@methods   
+	     		~@methods
 		   )
 	   )
 	 )
 )
 
 
+(when (thread-bound? #'*bundle*)
+  (register-service IClojureOSGi
+     (require [_ bundle name]
+       (with-bundle bundle
+          (require (symbol name))))
 
-(register-service IClojureOSGi
-   (require [_ bundle name]
-     (with-bundle bundle
-        (require (symbol name))))
-        
-   (withBundle [_ bundle r]
-     (with-bundle* bundle #(.run r)))     
-        
+     (withBundle [_ bundle r]
+       (with-bundle* bundle #(.run r)))
 
-   (loadAOTClass [_ bundle name]
-		 (with-bundle bundle
-		    (Class/forName name true 
-	        (BundleClassLoader. bundle))))
-) 
+
+     (loadAOTClass [_ bundle name]
+                   (with-bundle bundle
+                      (Class/forName name true
+                  (BundleClassLoader. bundle))))
+  ))
 
 
 
