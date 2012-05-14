@@ -3,7 +3,7 @@
   (:import [clojure.osgi IClojureOSGi])
 )
 
-(def ^{:private true} osgi-debug false)
+(def ^{:private true} osgi-debug true)
 
 (def ^:dynamic *bundle*)
 (def ^:dynamic *clojure-osgi-bundle*)
@@ -102,6 +102,9 @@
     (let [cname (str (namespace-munge lib) "__init")]
       (try
         (.loadClass *bundle* cname)
+        (catch ClassNotFoundException e
+          (when osgi-debug
+            (println "class not found: " cname)))
         (catch RuntimeException e
           (if (instance? ClassNotFoundException (.getCause e))
             (when osgi-debug
@@ -161,29 +164,48 @@
   )
 )
 
+(def system-vendor
+  (let [vendor-property (System/getProperty "org.osgi.framework.vendor")]
+    (if vendor-property
+      (constantly vendor-property)
+      (fn [& args]
+        (when *bundle*
+          (-> *bundle* .getBundleContext (.getProperty "org.osgi.framework.vendor")))))))
+
 (declare with-bundle*)
-(defmulti bundle-for-resource (constantly (System/getProperty "org.osgi.framework.vendor")))
+(defmulti bundle-for-resource system-vendor)
 
-; extracts bundle id from eclipse/equinox resource url
-(defn- eclipse-bundle-id [url]
-	(let [host (.getHost url) dot (.indexOf host  (int \.))]
-	  (Integer/parseInt
-	    (if (and (>= dot 0) (< dot (- (count host) 1)))
-	      (.substring host 0 dot) host))
-	)
-)
+(defn- host-part-header-bundle-id [url]
+  "Extracts bundle ID from resource URLs in when the bundle ID is at
+  the beginning of the host part of a resource URL.
+  This is known to be true for both Eclipse/Equinox and current Apache Felix."
+  (let [host (.getHost url) dot (.indexOf host  (int \.))]
+    (Integer/parseInt
+      (if (and (>= dot 0) (< dot (- (count host) 1)))
+        (.substring host 0 dot) host))))
 
-; computes bundle that is able to provide resource, specified by it's name
-(defmethod bundle-for-resource "Eclipse" [bundle resource]
+(defn- host-part-header-bundle-for-resource [bundle resource]
+  "Finds the bundle to use given a resource URL, for use with OSGi
+  implementations which put the bundle ID at the beginning of resource
+  URIs."
   (let [url (.getResource bundle resource)]
     (when osgi-debug
-      (println "url for  " resource " = " url)) 
+      (println "url for " resource " = " url))
     (when url
-      (.getBundle (.getBundleContext *clojure-osgi-bundle*) (eclipse-bundle-id url)))))
+      (let [result (.getBundle (.getBundleContext *clojure-osgi-bundle*) (host-part-header-bundle-id url))]
+        (when osgi-debug (println "result is" result))
+        result))))
 
+; both Apache Felix and Eclipse Equinox comply with this mechanism.
+(defmethod bundle-for-resource "Eclipse" [bundle resource]
+  (host-part-header-bundle-for-resource bundle resource))
+(defmethod bundle-for-resource "Apache Software Foundation" [bundle resource]
+  (host-part-header-bundle-for-resource bundle resource))
 
 (defn set-context-classloader! [l]
   (-> (Thread/currentThread) (.setContextClassLoader l)))
+
+(when osgi-debug (println "System vendor detected as <" (system-vendor) ">"))
 
 (when (thread-bound? #'*bundle*)
   (alter-var-root (find-var (symbol "clojure.core" "load"))
