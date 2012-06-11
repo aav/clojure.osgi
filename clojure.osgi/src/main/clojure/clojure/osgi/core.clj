@@ -140,11 +140,10 @@
   (alter-var-root (find-var (symbol "clojure.core" "use"))
     (fn [original]
       (fn [& args]
-        (when osgi-debug
-          (println (str "use " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
-      
-        (check-libs (libspecs args))
-      
+        (when (and (thread-bound? #'*bundle*) *bundle*)
+          (when osgi-debug
+            (println (str "use " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
+          (check-libs (libspecs args)))
         (apply original args)
       )
     )
@@ -153,11 +152,10 @@
   (alter-var-root (find-var (symbol "clojure.core" "require")) 
     (fn [original]
       (fn [& args]
-        (when osgi-debug
-          (println (str "require " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
-    
-        (check-libs (libspecs args))
-    
+        (when (and (thread-bound? #'*bundle*) *bundle*)
+          (when osgi-debug
+            (println (str "require " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
+          (check-libs (libspecs args)))
         (apply original args)
       )
     )
@@ -169,7 +167,7 @@
     (if vendor-property
       (constantly vendor-property)
       (fn [& args]
-        (when *bundle*
+        (when (and (thread-bound? #'*bundle*) *bundle*)
           (-> *bundle* .getBundleContext (.getProperty "org.osgi.framework.vendor")))))))
 
 (declare with-bundle*)
@@ -211,46 +209,58 @@
   (alter-var-root (find-var (symbol "clojure.core" "load"))
     (fn [original]
       (fn [path]
-        (when osgi-debug
-          (println (str "load " path " from " (.getSymbolicName *bundle*))))
-        (let [path (full-path path)]
-          (if-not (*pending-paths* path)
-            (binding [*pending-paths* (conj *pending-paths* path)
-                      *currently-loading* path]
-              (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
-                (if-let [bundle (or (bundle-for-resource *bundle* (str path ".clj"))
-                                    (bundle-for-resource *bundle* (str path "__init.class")))]
-                  (do
-                    (when osgi-debug
-                      (println "loading " (.substring path 1) " with bundle " (.getSymbolicName bundle)))
-                    (with-bundle* bundle load))
-                  (do
-                    (when osgi-debug
-                      (println "loading " (.substring path 1) " with no bundle"))
-                    (load))))))))))
+        (if (not (and (thread-bound? #'*bundle*) *bundle*))
+          (do
+            (when osgi-debug
+              (println (str "Bundle not defined in thread-local context; falling back for load of " path)))
+            (original path))
+          (do
+            (when osgi-debug
+              (println (str "load " path " from " (.getSymbolicName *bundle*))))
+            (let [path (full-path path)]
+              (if-not (*pending-paths* path)
+                (binding [*pending-paths* (conj *pending-paths* path)
+                          *currently-loading* path]
+                  (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
+                    (if-let [bundle (or (bundle-for-resource *bundle* (str path ".clj"))
+                                        (bundle-for-resource *bundle* (str path "__init.class")))]
+                      (do
+                        (when osgi-debug
+                          (println "loading " (.substring path 1) " with bundle " (.getSymbolicName bundle)))
+                        (with-bundle* bundle load))
+                      (do
+                        (when osgi-debug
+                          (println "loading " (.substring path 1) " with no bundle"))
+                        (load))))))))))))
   (alter-var-root (find-var (symbol "clojure.java.io" "resource"))
     (fn [original]
       (fn 
         ([n]
-          (when osgi-debug
-            (println (str "looking for resource " n " from " (.getSymbolicName *bundle*))))
-          (if-let [bundle (bundle-for-resource *bundle* n)]
+          (if (not (and (thread-bound? #'*bundle*) *bundle*))
             (do
               (when osgi-debug
-                (println "loading resource " n " with bundle " (.getSymbolicName bundle)))
-              (let [new-loader (BundleClassLoader. bundle)
-                    old-loader (.getContextClassLoader (Thread/currentThread))]
-                (when osgi-debug
-                  (println "new-loader " new-loader))
-                (try
-                  (set-context-classloader! new-loader)
-                  (original n)
-                  (finally 
-                    (set-context-classloader! old-loader)))))
+                (println (str "Bundle not defined in thread-local context; falling back for resource " n)))
+              (original n))
             (do
               (when osgi-debug
-                (println "loading " n " with no bundle"))
-              (original n))))
+                (println (str "looking for resource " n " from " (.getSymbolicName *bundle*))))
+              (if-let [bundle (bundle-for-resource *bundle* n)]
+                (do
+                  (when osgi-debug
+                    (println "loading resource " n " with bundle " (.getSymbolicName bundle)))
+                  (let [new-loader (BundleClassLoader. bundle)
+                        old-loader (.getContextClassLoader (Thread/currentThread))]
+                    (when osgi-debug
+                      (println "new-loader " new-loader))
+                    (try
+                      (set-context-classloader! new-loader)
+                      (original n)
+                      (finally 
+                        (set-context-classloader! old-loader)))))
+                (do
+                  (when osgi-debug
+                    (println "loading " n " with no bundle"))
+                  (original n))))))
         ([n loader]
           (original n loader)))))
   )
