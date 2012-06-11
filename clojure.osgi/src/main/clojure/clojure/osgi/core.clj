@@ -232,6 +232,19 @@
                         (when osgi-debug
                           (println "loading " (.substring path 1) " with no bundle"))
                         (load))))))))))))
+  (alter-var-root (find-var (symbol "clojure.core" "in-ns"))
+    (fn [original]
+      (fn [n]
+        (let [curr-bundle (and (thread-bound? #'*bundle*) *bundle*)] ; FIXME: can this lead to inaccurate bundle associations?
+          (if curr-bundle
+            (do
+              (when osgi-debug
+                (println (str "Associating namespace " n " with bundle " curr-bundle)))
+              (original (vary-meta n assoc ::bundle curr-bundle)))
+            (do
+              (when osgi-debug
+                (println (str "Namespace " n " being loaded, but *bundle* is not set")))
+              (original n)))))))
   (alter-var-root (find-var (symbol "clojure.java.io" "resource"))
     (fn [original]
       (fn 
