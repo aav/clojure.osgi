@@ -109,20 +109,18 @@
 
 (when (thread-bound? #'*bundle*)
   (register-service IClojureOSGi
-     (require [_ bundle name]
-       (with-bundle bundle
-          (require (symbol name))))
+    (unload [_ bundle]
+      (unload-namespaces-for-bundle bundle))
 
-     (withBundle [_ bundle r]
-       (with-bundle* bundle #(.run r)))
+      (require [_ bundle name]
+        (with-bundle bundle
+           (require (symbol name))))
 
+      (withBundle [_ bundle r]
+        (with-bundle* bundle #(.run r)))
 
-     (loadAOTClass [_ bundle name]
-                   (with-bundle bundle
-                      (Class/forName name true
-                  (BundleClassLoader. bundle))))
-  ))
-
-
-
+      (loadAOTClass [_ bundle name]
+        (with-bundle bundle
+                     (Class/forName name true
+                       (BundleClassLoader. bundle))))))
 

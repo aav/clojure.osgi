@@ -1,4 +1,5 @@
 (ns clojure.osgi.core
+  (:import [org.osgi.framework Bundle])
   (:import [clojure.osgi BundleClassLoader RunnableWithException])
   (:import [clojure.osgi IClojureOSGi])
 )
@@ -7,6 +8,27 @@
 
 (def ^:dynamic *bundle*)
 (def ^:dynamic *clojure-osgi-bundle*)
+
+(defn bundle-for-ns [ns]
+  (let [ns-meta (meta ns)]
+    (and ns-meta (::bundle ns-meta))))
+
+(defn namespaces-for-bundle [^Bundle bundle]
+  (let [bundle-id (.getBundleId bundle)]
+    (filter
+      (fn [^clojure.lang.Namespace ns]
+        (let [ns-bundle (bundle-for-ns ns)]
+          (and ns-bundle
+                   (= (.getBundleId ns-bundle) bundle-id))))
+      (all-ns))))
+
+(defn unload-namespaces-for-bundle [^Bundle bundle]
+  (doseq [^clojure.lang.Namespace ns (namespaces-for-bundle bundle)]
+    (let [ns-sym (.getName ns)
+          loaded-libs (.get (clojure.lang.RT/var "clojure.core" "*loaded-libs*"))]
+      (dosync
+        (alter loaded-libs disj ns-sym))
+      (remove-ns (.getName ns)))))
 
 ; copy from clojure.core BEGIN
 (defn- libspec?
