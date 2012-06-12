@@ -107,7 +107,7 @@
 )
 
 
-(when (thread-bound? #'*bundle*)
+(when *bundle*
   (register-service IClojureOSGi
     (unload [_ bundle]
       (unload-namespaces-for-bundle bundle))
