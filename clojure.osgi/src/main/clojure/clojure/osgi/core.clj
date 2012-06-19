@@ -1,8 +1,7 @@
 (ns clojure.osgi.core
   (:import [org.osgi.framework Bundle])
-  (:import [clojure.osgi BundleClassLoader RunnableWithException])
-  (:import [clojure.osgi IClojureOSGi])
-)
+  (:import [clojure.osgi BundleClassLoader IClojureOSGi RunnableWithException])
+  (:import [clojure.lang Namespace]))
 
 (def ^{:private true} osgi-debug true)
 
@@ -13,22 +12,41 @@
   (let [ns-meta (meta ns)]
     (and ns-meta (::bundle ns-meta))))
 
+(defn bundle-is-usable [^Bundle bundle]
+  (not= 0
+        (bit-and (bit-or Bundle/RESOLVED Bundle/STARTING Bundle/STOPPING Bundle/ACTIVE)
+                 (.getState bundle))))
+
 (defn namespaces-for-bundle [^Bundle bundle]
   (let [bundle-id (.getBundleId bundle)]
     (filter
-      (fn [^clojure.lang.Namespace ns]
+      (fn [^Namespace ns]
         (let [ns-bundle (bundle-for-ns ns)]
           (and ns-bundle
                    (= (.getBundleId ns-bundle) bundle-id))))
       (all-ns))))
 
-(defn unload-namespaces-for-bundle [^Bundle bundle]
-  (doseq [^clojure.lang.Namespace ns (namespaces-for-bundle bundle)]
-    (let [ns-sym (.getName ns)
+(defn- really-unload-namespace [^Namespace ns]
+  (let [ns-sym (.getName ns)
           loaded-libs (.get (clojure.lang.RT/var "clojure.core" "*loaded-libs*"))]
       (dosync
         (alter loaded-libs disj ns-sym))
-      (remove-ns (.getName ns)))))
+      (remove-ns (.getName ns))))
+
+(defn namespaces-for-unused-bundles []
+  (for [^Namespace ns (all-ns)
+        :let [bundle (::bundle (meta ns))]
+        :when (and bundle
+                   (not (bundle-is-usable bundle)))]
+    ns))
+
+(defn unload-namespaces-for-unused-bundles []
+  (doseq [ns (namespaces-for-unused-bundles)]
+    (really-unload-namespace ns)))
+
+(defn unload-namespaces-for-bundle [^Bundle bundle]
+  (doseq [^Namespace ns (namespaces-for-bundle bundle)]
+    (really-unload-namespace ns)))
 
 ; copy from clojure.core BEGIN
 (defn- libspec?
