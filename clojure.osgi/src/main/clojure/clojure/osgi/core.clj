@@ -261,7 +261,8 @@
               (binding [*pending-paths* (conj *pending-paths* path)
                         *currently-loading* path]
                 (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
-                  (if-let [bundle (or (bundle-for-resource *bundle* (str path ".clj"))
+                  (if-let [bundle (or (bundle-for-resource *bundle* (str path "/.bundle"))
+                                      (bundle-for-resource *bundle* (str path ".clj"))
                                       (bundle-for-resource *bundle* (str path "__init.class")))]
                     (do
                       (when osgi-debug
