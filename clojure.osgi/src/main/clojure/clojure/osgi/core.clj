@@ -3,7 +3,7 @@
   (:import [clojure.osgi BundleClassLoader IClojureOSGi RunnableWithException])
   (:import [clojure.lang Namespace]))
 
-(def ^{:private true} osgi-debug true)
+(def ^{:private true} osgi-debug false)
 
 (def ^:dynamic *bundle* nil)
 (def ^:dynamic *clojure-osgi-bundle*)
@@ -137,71 +137,6 @@
   )
 )
 
-(defn- available [lib]
-  (or
-    (let [cname (str (namespace-munge lib) "__init")]
-      (try
-        (.loadClass *bundle* cname)
-        (catch ClassNotFoundException e
-          (when osgi-debug
-            (println "class not found: " cname)))
-        (catch RuntimeException e
-          (if (instance? ClassNotFoundException (.getCause e))
-            (when osgi-debug
-              (println "class not found: " cname))
-            (throw e)
-            )
-          )
-        )
-      )
-     
-    (let [rname (str (root-resource lib) ".clj")]
-      (or
-        (.getResource *bundle* rname)
-        (when osgi-debug
-          (println "resource not found: " rname))
-        )
-      )
-    )
-  )
-
-(defn check-libs [libs]
-  (doseq [lib libs]
-    (when-not (available lib)
-      (when osgi-debug
-        (println (str lib " is not available from bundle " (.getSymbolicName *bundle*))))
-
-      (throw (Exception. (str "cannot load " lib " from bundle " (.getSymbolicName *bundle*))))
-    )
-  )
-)
-
-(when *bundle*
-  (alter-var-root (find-var (symbol "clojure.core" "use"))
-    (fn [original]
-      (fn [& args]
-        (when *bundle*
-          (when osgi-debug
-            (println (str "use " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
-          (check-libs (libspecs args)))
-        (apply original args)
-      )
-    )
-  )
-  
-  (alter-var-root (find-var (symbol "clojure.core" "require")) 
-    (fn [original]
-      (fn [& args]
-        (when *bundle*
-          (when osgi-debug
-            (println (str "require " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
-          (check-libs (libspecs args)))
-        (apply original args)
-      )
-    )
-  )
-)
-
 (def system-vendor
   (let [vendor-property (System/getProperty "org.osgi.framework.vendor")]
     (if vendor-property
@@ -240,6 +175,59 @@
 (defmethod bundle-for-resource "Apache Software Foundation" [bundle resource]
   (host-part-header-bundle-for-resource bundle resource))
 
+(defn- available [lib]
+  "Return the bundle from which the given resource is available"
+  (let [forced-bundle (bundle-for-resource *bundle* (str (root-resource lib) "/.bundle"))
+        bundle (or forced-bundle *bundle*)]
+    (when (and osgi-debug forced-bundle)
+      (println (str "marker for " lib " specifies non-default bundle " bundle)))
+    (when (or
+           (let [cname (str (namespace-munge lib) "__init")]
+             (when osgi-debug (println "trying to load as a class"))
+             (try
+               (.loadClass bundle cname)
+               (catch ClassNotFoundException e
+                 (when osgi-debug (println "class not found: " cname)))
+               (catch RuntimeException e
+                 (if (instance? ClassNotFoundException (.getCause e))
+                   (when osgi-debug (println "class not found: " cname))
+                   (throw e)))))
+     
+           (let [rname (str (root-resource lib) ".clj")]
+             (when osgi-debug (println "trying to load as a resource"))
+             (or (and forced-bundle
+                      (.getEntry bundle rname))
+                 (.getResource bundle rname)
+                 (when osgi-debug (println "resource not found: " rname)))))
+      (when osgi-debug (println "success; returning bundle " bundle " for " lib))
+      bundle)))
+
+(defn check-libs [libs]
+  (doseq [lib libs]
+    (when-not (available lib)
+      (when osgi-debug
+        (println (str lib " is not available from bundle " (.getSymbolicName *bundle*))))
+      (throw (Exception. (str "cannot load " lib " from bundle " (.getSymbolicName *bundle*)))))))
+
+(when *bundle*
+  (alter-var-root (find-var (symbol "clojure.core" "use"))
+    (fn [original]
+      (fn [& args]
+        (when *bundle*
+          (when osgi-debug
+            (println (str "use " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
+          (check-libs (libspecs args)))
+        (apply original args))))
+  
+  (alter-var-root (find-var (symbol "clojure.core" "require")) 
+    (fn [original]
+      (fn [& args]
+        (when *bundle*
+          (when osgi-debug
+            (println (str "require " args " from " (.getSymbolicName *bundle*) ", currently loading: " *currently-loading*)))
+          (check-libs (libspecs args)))
+        (apply original args)))))
+
 (defn set-context-classloader! [l]
   (-> (Thread/currentThread) (.setContextClassLoader l)))
 
@@ -261,17 +249,19 @@
               (binding [*pending-paths* (conj *pending-paths* path)
                         *currently-loading* path]
                 (let [load (fn [] (clojure.lang.RT/load (.substring path 1)))]
-                  (if-let [bundle (or (bundle-for-resource *bundle* (str path "/.bundle"))
-                                      (bundle-for-resource *bundle* (str path ".clj"))
-                                      (bundle-for-resource *bundle* (str path "__init.class")))]
-                    (do
-                      (when osgi-debug
-                        (println "loading " (.substring path 1) " with bundle " (.getSymbolicName bundle)))
-                      (with-bundle* bundle load))
-                    (do
-                      (when osgi-debug
-                        (println "loading " (.substring path 1) " with no bundle"))
-                      (load))))))))))))
+                  (let [forced-bundle (bundle-for-resource *bundle* (str path "/.bundle"))
+                        bundle (or forced-bundle
+                                   (bundle-for-resource *bundle* (str path ".clj"))
+                                   (bundle-for-resource *bundle* (str path "__init.class")))]
+                    (if bundle
+                      (do
+                        (when osgi-debug
+                          (println "loading " (.substring path 1) " with bundle " (.getSymbolicName bundle)))
+                        (with-bundle* bundle (boolean forced-bundle) load))
+                      (do
+                        (when osgi-debug
+                          (println "loading " (.substring path 1) " with no bundle"))
+                        (load)))))))))))))
 (alter-var-root (find-var (symbol "clojure.core" "in-ns"))
   (fn [original]
     (fn [n]
@@ -320,9 +310,9 @@
 ;   - classloader is is set to appropriate bundle class loader
 ;   - clojure.core/load is re-bound with osgi-load
 ;   - clojure.core/use is re-bound with osgi-use
-(defn with-bundle* [bundle function & params]
+(defn with-bundle* [bundle force-direct function & params]
   (binding [*bundle* bundle]
-    (clojure.osgi.internal.ClojureOSGi/withLoader (BundleClassLoader. bundle)
+    (clojure.osgi.internal.ClojureOSGi/withLoader (BundleClassLoader. bundle force-direct)
       (if (instance? RunnableWithException function) 
         function                                         
         (reify RunnableWithException
@@ -333,9 +323,7 @@
 
 ; convinience macro
 (defmacro with-bundle [bundle & body]
-  `(with-bundle* ~bundle
+  `(with-bundle* ~bundle false
       (fn [] ~@body)
    )
 )
-
-

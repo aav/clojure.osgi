@@ -117,7 +117,7 @@
            (require (symbol name))))
 
       (withBundle [_ bundle r]
-        (with-bundle* bundle #(.run r)))
+        (with-bundle* bundle false #(.run r)))
 
       (loadAOTClass [_ bundle name]
         (with-bundle bundle
