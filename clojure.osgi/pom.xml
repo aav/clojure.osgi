@@ -34,6 +34,8 @@
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
 			<version>${clojure-version}</version>
+			<scope>provided</scope>
+			<type>jar</type>
 		</dependency>
 
 	</dependencies>
