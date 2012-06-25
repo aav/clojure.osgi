@@ -5,7 +5,7 @@
 	<groupId>clojure.osgi</groupId>
 	<artifactId>clojure.osgi</artifactId>
 	<packaging>jar</packaging>
-	<version>1.3.0-indeed</version>
+	<version>1.3.0-dyfis.001</version>
 	<name>ClojureOSGI</name>
 
 	<properties>
@@ -34,6 +34,8 @@
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
 			<version>${clojure-version}</version>
+			<scope>provided</scope>
+			<type>jar</type>
 		</dependency>
 
 	</dependencies>

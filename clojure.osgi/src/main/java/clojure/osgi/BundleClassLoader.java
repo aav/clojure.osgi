@@ -17,9 +17,15 @@ import org.osgi.framework.Bundle;
 
 public class BundleClassLoader extends ClassLoader {
 	private Bundle _bundle;
+	private boolean _forceDirect;
 
 	public BundleClassLoader(Bundle bundle) {
+		this(bundle, false);
+	}
+
+	public BundleClassLoader(Bundle bundle, boolean forceDirect) {
 		_bundle = bundle;
+		_forceDirect = forceDirect;
 	}
 
 	@Override
@@ -29,6 +35,9 @@ public class BundleClassLoader extends ClassLoader {
 
 	@Override
 	public URL getResource(String name) {
+		if(_forceDirect) {
+			return _bundle.getEntry(name);
+		}
 		return _bundle.getResource(name);
 	}
 
@@ -37,6 +46,7 @@ public class BundleClassLoader extends ClassLoader {
         final StringBuilder sb = new StringBuilder();
         sb.append("BundleClassLoader");
         sb.append("{_bundle=").append(_bundle);
+        sb.append(",_forceDirect=").append(_forceDirect ? "true" : "false");
         sb.append('}');
         return sb.toString();
     }
