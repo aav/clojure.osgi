@@ -31,4 +31,13 @@ public class BundleClassLoader extends ClassLoader {
 	public URL getResource(String name) {
 		return _bundle.getResource(name);
 	}
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("BundleClassLoader");
+        sb.append("{_bundle=").append(_bundle);
+        sb.append('}');
+        return sb.toString();
+    }
 }

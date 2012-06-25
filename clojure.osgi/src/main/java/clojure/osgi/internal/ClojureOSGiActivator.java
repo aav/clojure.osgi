@@ -9,11 +9,17 @@ public class ClojureOSGiActivator implements BundleActivator {
 	private BundleTracker tracker;
 
 	public void start(BundleContext context) throws Exception {
-		ClojureOSGi.initialize(context);
+		ClassLoader clojureClassLoader = ClojureOSGiActivator.class.getClassLoader();
+		ClassLoader priorClassLoader = Thread.currentThread().getContextClassLoader();
 
-		tracker = new ExtenderTracker(context);
-		tracker.open();
-		
+		try {
+			Thread.currentThread().setContextClassLoader(clojureClassLoader);
+			ClojureOSGi.initialize(context);
+			tracker = new ExtenderTracker(context);
+			tracker.open();
+		} finally {
+			Thread.currentThread().setContextClassLoader(priorClassLoader);
+		}
 	}
 
 	public void stop(BundleContext context) throws Exception {

@@ -1,6 +1,8 @@
 bin/
 .settings/
 /target/
-=======
 *~
-target/
+target
+.idea
+*.iml
+atlassian-ide-plugin.xml

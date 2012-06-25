@@ -1,12 +1,10 @@
 package clojure.osgi.internal;
 
+import clojure.lang.*;
+import clojure.lang.Compiler;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import clojure.lang.Compiler;
-import clojure.lang.RT;
-import clojure.lang.Symbol;
-import clojure.lang.Var;
 import clojure.osgi.RunnableWithException;
 
 public class ClojureOSGi {
@@ -19,7 +17,6 @@ public class ClojureOSGi {
 	public static void initialize(final BundleContext aContext) throws Exception {
 		if (!s_Initialized) {
 			RT.var("clojure.osgi.core", "*clojure-osgi-bundle*", aContext.getBundle());
-			
 			withLoader(ClojureOSGi.class.getClassLoader(), new RunnableWithException() {
 				public Object run() {
 					boolean pushed = false;
@@ -34,15 +31,14 @@ public class ClojureOSGi {
 						REQUIRE.invoke(Symbol.intern("clojure.osgi.services"));
 					} catch (Exception e) {
 						throw new RuntimeException("cannot initialize clojure.osgi", e);
-					}finally{
-						if(pushed)
-							Var.popThreadBindings();
+					} finally {
+                        if (pushed) {
+                            Var.popThreadBindings();
+                        }
 					}
-					
 					return null;
 				}
 			});
-
 			s_Initialized = true;
 		}
 	}
@@ -52,11 +48,11 @@ public class ClojureOSGi {
 			withBundle(aBundle, new RunnableWithException() {
 				public Object run() throws Exception {
 					REQUIRE.invoke(Symbol.intern(aName));
-					
 					return null;
 				}
 			});
 		} catch (Exception aEx) {
+            aEx.printStackTrace();
 			throw new RuntimeException(aEx);
 		}
 	}
