@@ -153,7 +153,7 @@
   the beginning of the host part of a resource URL.
   This is known to be true for both Eclipse/Equinox and current Apache Felix."
   (let [host (.getHost url) dot (.indexOf host  (int \.))]
-    (Integer/parseInt
+    (Long/parseLong
       (if (and (>= dot 0) (< dot (- (count host) 1)))
         (.substring host 0 dot) host))))
 
