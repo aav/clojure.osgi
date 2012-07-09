@@ -30,7 +30,7 @@ Import-Package: org.osgi.framework;version=1.5.0,
  clojure.repl.proxy$java.io;version="[1.3.0,1.5.0)",
  clojure.repl.proxy$java.lang;version="[1.3.0,1.5.0)",
  clojure.test;version="[1.3.0,1.5.0)",
- clojure.xml.proxy$java.lang;version="[1.3.0,1.5.0)",
+ clojure.xml.proxy$java.lang;version="[1.3.0,1.5.0)"
 Export-Package: clojure.osgi;version="1.3.0.dyfis-001"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
