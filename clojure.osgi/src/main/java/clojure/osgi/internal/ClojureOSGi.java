@@ -79,6 +79,6 @@ public class ClojureOSGi {
 	}*/
 	
 	static Object withBundle(Bundle aBundle, final RunnableWithException aCode) throws Exception {
-		return WITH_BUNDLE.invoke(aBundle, aCode);
+		return WITH_BUNDLE.invoke(aBundle, false, aCode);
 	}
 }
